@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
+/* Hada kay-forcer Tailwind v4 y-qra s-switch dyal next-themes ila kan m-instali */
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* L-Alwan l-asasiyya f-Light Mode (SaaS Premium) */
+  --background: #F8FAFC;
+  --foreground: #111827;
+
+  --color-neutral-bg: #FFFFFF;
+  --color-neutral-bg-alt: #F8FAFC;
+  --color-text-dark: #111827;
+  --color-text-muted: #6B7280;
+  --color-border-custom: #E5E7EB;
+
+  --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-jakarta), system-ui, -apple-system, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* L-Alwan f-Dark Mode (Kat-khdem automatic mlli s-switcher y-tbadal) */
+html.dark {
+  --background: #030712;
+  --foreground: #F8FAFC;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-neutral-bg: #0b0f19;
+  --color-neutral-bg-alt: #030712;
+  --color-text-dark: #F8FAFC;
+  --color-text-muted: #9CA3AF;
+  --color-border-custom: #1E293B;
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+}
+
+/* Glassmorphism utility classes (Khallihum kima huma) */
+.glass-panel {
+  background: rgba(11, 15, 25, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 12px 30px -10px rgba(16, 185, 129, 0.15);
 }
