@@ -1,6 +1,20 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Shield, Coins, Users, Trophy, ChevronRight, Play, Star, CircleDollarSign, Lock, Zap, Check } from "lucide-react";
+import {
+  Shield,
+  Coins,
+  Users,
+  Trophy,
+  ChevronRight,
+  Play,
+  Star,
+  CircleDollarSign,
+  Lock,
+  Zap,
+  Check,
+  ArrowRight,
+  Sparkles,
+} from "lucide-react";
 
 export default function MarketingPage() {
   const featuredClubs = [
@@ -8,343 +22,482 @@ export default function MarketingPage() {
       id: "club-1",
       name: "Wydad AC",
       slug: "wydad-ac",
-      description: "Join the official digital membership of the Red Castle and access exclusive locker room feeds.",
-      membersCount: "145K members",
+      description:
+        "Join the official digital membership of the Red Castle and access exclusive locker room feeds.",
+      membersCount: "145K",
       initials: "WAC",
-      color: "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50",
+      accentBg: "bg-red-50 dark:bg-red-950/20",
+      accentText: "text-red-600 dark:text-red-400",
+      accentBorder: "border-red-100 dark:border-red-900/50",
+      dotColor: "bg-red-500",
     },
     {
       id: "club-2",
       name: "Raja CA",
       slug: "raja-ca",
-      description: "Connect with the Green Eagles. Vote in player polls and read captains' training journals.",
-      membersCount: "138K members",
+      description:
+        "Connect with the Green Eagles. Vote in player polls and read captains' training journals.",
+      membersCount: "138K",
       initials: "RCA",
-      color: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50",
+      accentBg: "bg-emerald-50 dark:bg-emerald-950/20",
+      accentText: "text-emerald-600 dark:text-emerald-400",
+      accentBorder: "border-emerald-100 dark:border-emerald-900/50",
+      dotColor: "bg-emerald-500",
     },
     {
       id: "club-3",
       name: "Ittihad Tanger",
       slug: "ittihad-tanger",
-      description: "Unlock premium video streams and behind-the-scenes diaries from the blue city's pride.",
-      membersCount: "42K members",
+      description:
+        "Unlock premium video streams and behind-the-scenes diaries from the blue city's pride.",
+      membersCount: "42K",
       initials: "IRT",
-      color: "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/50",
+      accentBg: "bg-blue-50 dark:bg-blue-950/20",
+      accentText: "text-blue-600 dark:text-blue-400",
+      accentBorder: "border-blue-100 dark:border-blue-900/50",
+      dotColor: "bg-blue-500",
     },
     {
       id: "club-4",
       name: "AS FAR Rabat",
       slug: "as-far",
-      description: "Support the Military Club. Unlock exclusive merchandise drops and matchday forums.",
-      membersCount: "89K members",
+      description:
+        "Support the Military Club. Unlock exclusive merchandise drops and matchday forums.",
+      membersCount: "89K",
       initials: "FAR",
-      color: "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50",
-    }
+      accentBg: "bg-amber-50 dark:bg-amber-950/20",
+      accentText: "text-amber-600 dark:text-amber-400",
+      accentBorder: "border-amber-100 dark:border-amber-900/50",
+      dotColor: "bg-amber-500",
+    },
+  ];
+
+  const steps = [
+    {
+      number: "01",
+      icon: Trophy,
+      title: "Choose Your Club",
+      description:
+        "Browse our roster of official clubs and find the team that makes your heart race on match day.",
+      accentBg: "bg-emerald-50 dark:bg-emerald-950/30",
+      accentBorder: "border-emerald-100 dark:border-emerald-900/40",
+      accentText: "text-emerald-600 dark:text-emerald-400",
+      numberColor: "text-emerald-600 dark:text-emerald-400",
+    },
+    {
+      number: "02",
+      icon: CircleDollarSign,
+      title: "Subscribe Securely",
+      description:
+        "Join officially for 50 MAD / month. Payments processed with bank-grade encryption via Stripe.",
+      accentBg: "bg-sky-50 dark:bg-sky-950/30",
+      accentBorder: "border-sky-100 dark:border-sky-900/40",
+      accentText: "text-sky-600 dark:text-sky-400",
+      numberColor: "text-sky-600 dark:text-sky-400",
+    },
+    {
+      number: "03",
+      icon: Lock,
+      title: "Unlock Exclusive Access",
+      description:
+        "Dive into subscriber-only posts, behind-the-scenes footage, live Q&As, and members-only drops.",
+      accentBg: "bg-violet-50 dark:bg-violet-950/30",
+      accentBorder: "border-violet-100 dark:border-violet-900/40",
+      accentText: "text-violet-600 dark:text-violet-400",
+      numberColor: "text-violet-600 dark:text-violet-400",
+    },
+  ];
+
+  const pricingFeatures = [
+    "Access exclusive subscriber-only posts",
+    "Direct forum interaction with players",
+    "Official club digital badge & profile",
+    "Behind-the-scenes video content",
+    "Priority matchday notifications",
+    "Members-only merch drops & discounts",
   ];
 
   return (
-    <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50 min-h-screen transition-colors duration-300">
-      {/* Background radial gradient glow (Theme style adaptive) */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-blue-600/5 via-emerald-600/5 to-transparent blur-3xl pointer-events-none -z-10 dark:opacity-20" />
+    <div className="min-h-screen transition-colors duration-300">
+      {/* Subtle radial glow — adapts to theme */}
+      <div
+        className="pointer-events-none fixed inset-0 -z-10 opacity-40 dark:opacity-20"
+        aria-hidden="true"
+      >
+        <div className="absolute left-1/2 top-0 h-[600px] w-full max-w-5xl -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-200/40 via-transparent to-transparent dark:from-emerald-900/20" />
+      </div>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-        
-        {/* Hero Section */}
-        <section className="text-center max-w-4xl mx-auto space-y-6 pt-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 dark:bg-blue-950/40 dark:border-blue-900/30 text-blue-650 dark:text-blue-400 text-xs font-semibold mb-2 shadow-sm">
-            <Star className="h-3.5 w-3.5 fill-blue-600 text-blue-600 dark:fill-blue-400 dark:text-blue-400" />
-            <span>The Ultimate Sports SaaS Multi-Tenant Platform</span>
-          </div>
-
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-            Monetize Your Sports Club's{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent block sm:inline">
-              Fan Component via Subscriptions
-            </span>
-          </h1>
-
-          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-            Empower your club to host exclusive behind-the-scenes content, live streams, members-only merchandise drops, and VIP community forums—all under your own brand.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Link href="/register">
-              <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold group gap-2 shadow-md shadow-blue-600/15 transition-all cursor-pointer">
-                Create Your Club Hub
-                <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-              </Button>
-            </Link>
-            <Link href="/admin/real-madrid">
-              <Button size="lg" className="w-full sm:w-auto gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-800 shadow-sm font-semibold transition-all cursor-pointer">
-                <Play className="h-4 w-4 fill-white text-white" />
-                Demo Club Admin
-              </Button>
-            </Link>
-          </div>
-
-          {/* Quick Demos Navigation Card */}
-          <div className="max-w-xl mx-auto px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 dark:bg-slate-900 dark:border-slate-800 flex flex-wrap justify-center items-center gap-4 text-xs text-slate-600 dark:text-slate-400 shadow-sm transition-colors duration-300">
-            <span className="font-semibold text-slate-900 dark:text-slate-200">Quick Dev Links:</span>
-            <Link href="/super-admin" className="text-blue-600 hover:underline font-medium dark:text-blue-400">Super Admin</Link>
-            <span>•</span>
-            <Link href="/admin/real-madrid" className="text-emerald-600 hover:underline font-medium dark:text-emerald-400">Club Admin Dashboard</Link>
-            <span>•</span>
-            <Link href="/real-madrid" className="text-emerald-600 hover:underline font-medium dark:text-emerald-400">Fan Club Page</Link>
-            <span>•</span>
-            <Link href="/real-madrid/subscribe" className="text-blue-600 hover:underline font-medium dark:text-blue-400">Fan Checkout</Link>
-          </div>
-        </section>
-
-        {/* Stats Grid */}
-        <section className="bg-slate-50 border border-slate-100 dark:bg-slate-900 dark:border-slate-800 rounded-3xl p-8 shadow-sm transition-colors duration-300">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-800">
-            <div className="py-4 sm:py-0">
-              <div className="font-display text-4xl font-extrabold text-slate-900 dark:text-white mb-1.5">150+</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Active Sports Clubs</div>
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        {/* ──────────────────────────────────────────────────────────── */}
+        {/*  HERO SECTION                                               */}
+        {/* ──────────────────────────────────────────────────────────── */}
+        <section className="pb-20 pt-12 md:pb-28 md:pt-20">
+          <div className="mx-auto max-w-3xl text-center">
+            {/* Pill badge */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-400">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>The #1 Sports SaaS Fan Platform</span>
             </div>
-            <div className="py-4 sm:py-0">
-              <div className="font-display text-4xl font-extrabold text-blue-600 dark:text-blue-400 mb-1.5">10M+</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Registered Fans</div>
-            </div>
-            <div className="py-4 sm:py-0">
-              <div className="font-display text-4xl font-extrabold text-slate-900 dark:text-white mb-1.5">$8.5M+</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Fan Revenue Paid Out</div>
-            </div>
-          </div>
-        </section>
 
-        {/* Featured Moroccan Clubs Section */}
-        <section className="space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Featured Moroccan Clubs
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-              Explore the official hubs of Morocco's top athletic associations and support your favorite squad directly.
+            {/* Headline */}
+            <h1 className="font-display text-4xl font-extrabold tracking-tight text-text-dark sm:text-5xl md:text-6xl md:leading-[1.1]">
+              Monetize Your Club's{" "}
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-300">
+                Fan Community
+              </span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-text-muted sm:text-lg">
+              Exclusive content, live streams, members-only drops, and VIP
+              forums — all under your own brand. Powered by{" "}
+              <span className="font-semibold text-text-dark">TEAMHUB</span>.
             </p>
+
+            {/* CTA Buttons */}
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link href="/register">
+                <Button
+                  size="lg"
+                  className="group w-full gap-2.5 bg-emerald-600 font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 hover:shadow-xl hover:shadow-emerald-600/25 sm:w-auto"
+                >
+                  Create Your Club Hub
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Button>
+              </Link>
+              <Link href="/admin/real-madrid">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="group w-full gap-2.5 font-semibold sm:w-auto"
+                >
+                  <Play className="h-4 w-4 fill-current" />
+                  Live Demo
+                </Button>
+              </Link>
+            </div>
+
+            {/* Quick dev links */}
+            <div className="mx-auto mt-8 flex max-w-xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-2xl border border-border-custom bg-neutral-bg px-5 py-3 text-xs text-text-muted shadow-sm">
+              <span className="font-semibold text-text-dark">Dev Links:</span>
+              <Link
+                href="/super-admin"
+                className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+              >
+                Super Admin
+              </Link>
+              <span className="text-border-custom">•</span>
+              <Link
+                href="/admin/real-madrid"
+                className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+              >
+                Club Dashboard
+              </Link>
+              <span className="text-border-custom">•</span>
+              <Link
+                href="/real-madrid"
+                className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+              >
+                Fan Page
+              </Link>
+              <span className="text-border-custom">•</span>
+              <Link
+                href="/real-madrid/subscribe"
+                className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+              >
+                Checkout
+              </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredClubs.map((club) => (
-              <div 
-                key={club.id} 
-                className="bg-slate-50 border border-slate-100 dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 flex flex-col justify-between"
+          {/* Social proof stats */}
+          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border-custom bg-border-custom shadow-sm sm:grid-cols-3">
+            {[
+              { value: "150+", label: "Active Sports Clubs" },
+              { value: "10M+", label: "Registered Fans", highlight: true },
+              { value: "$8.5M+", label: "Revenue Paid Out" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="bg-neutral-bg px-6 py-6 text-center transition-colors"
               >
-                <div>
-                  {/* Logo Placeholder */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`h-11 w-11 rounded-full flex items-center justify-center font-bold text-xs border ${club.color}`}>
-                      {club.initials}
-                    </div>
-                    {/* Active Members Badge */}
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white text-slate-600 border border-slate-100 dark:bg-slate-950 dark:text-slate-400 dark:border-slate-850">
-                      <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-                      {club.membersCount}
-                    </span>
-                  </div>
-
-                  {/* Club details */}
-                  <h3 className="font-display text-base font-bold text-slate-900 dark:text-white mb-2">
-                    {club.name}
-                  </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
-                    {club.description}
-                  </p>
+                <div
+                  className={`font-display text-3xl font-extrabold tracking-tight ${
+                    stat.highlight
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-text-dark"
+                  }`}
+                >
+                  {stat.value}
                 </div>
-
-                {/* View Hub CTA Link */}
-                <Link href={`/clubs/${club.slug}`} className="w-full">
-                  <Button className="w-full text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors duration-200 cursor-pointer">
-                    View Hub
-                  </Button>
-                </Link>
+                <div className="mt-1 text-xs font-medium uppercase tracking-wider text-text-muted">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* How It Works – 3-Step Fan Journey                         */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <section className="space-y-10">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-text-dark">
+        {/* ──────────────────────────────────────────────────────────── */}
+        {/*  FEATURED CLUBS GRID                                        */}
+        {/* ──────────────────────────────────────────────────────────── */}
+        <section className="pb-20 md:pb-28">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-text-dark sm:text-3xl">
+              Featured Clubs
+            </h2>
+            <p className="mt-3 text-sm text-text-muted sm:text-base">
+              Explore the official hubs of Morocco's top athletic associations.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {featuredClubs.map((club) => (
+              <Link
+                key={club.id}
+                href={`/clubs/${club.slug}`}
+                className="group relative flex flex-col justify-between rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-800/50"
+              >
+                {/* Header: Avatar + Member count */}
+                <div>
+                  <div className="mb-5 flex items-center justify-between">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-xl border text-sm font-bold ${club.accentBg} ${club.accentText} ${club.accentBorder}`}
+                    >
+                      {club.initials}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-muted">
+                      <span
+                        className={`inline-block h-1.5 w-1.5 rounded-full ${club.dotColor}`}
+                      />
+                      {club.membersCount} fans
+                    </div>
+                  </div>
+
+                  <h3 className="font-display text-base font-bold text-text-dark">
+                    {club.name}
+                  </h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-text-muted">
+                    {club.description}
+                  </p>
+                </div>
+
+                {/* Footer CTA */}
+                <div className="mt-6 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  View Hub
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ──────────────────────────────────────────────────────────── */}
+        {/*  HOW IT WORKS                                                */}
+        {/* ──────────────────────────────────────────────────────────── */}
+        <section className="pb-20 md:pb-28">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-text-dark sm:text-3xl">
               How It Works
             </h2>
-            <p className="text-text-muted text-sm sm:text-base">
-              Three simple steps to join your favourite club's digital inner circle.
+            <p className="mt-3 text-sm text-text-muted sm:text-base">
+              Three simple steps to join your favourite club's digital inner
+              circle.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Step 1 */}
-            <div className="relative bg-neutral-bg border border-border-custom rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 text-center group">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 text-white text-xs font-bold shadow-md shadow-blue-600/20">
-                1
-              </span>
-              <div className="h-12 w-12 mx-auto rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-200">
-                <Trophy className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <h3 className="font-display text-base font-bold text-text-dark mb-2">Choose Your Club</h3>
-              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
-                Browse our roster of official clubs and find the team that makes your heart race on match day.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div
+                  key={step.number}
+                  className="group relative rounded-2xl border border-border-custom bg-neutral-bg p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+                >
+                  {/* Step number */}
+                  <span
+                    className={`font-display text-5xl font-extrabold ${step.numberColor} opacity-10 absolute right-6 top-4 select-none`}
+                  >
+                    {step.number}
+                  </span>
 
-            {/* Step 2 */}
-            <div className="relative bg-neutral-bg border border-border-custom rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 text-center group">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center justify-center h-7 w-7 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-600/20">
-                2
-              </span>
-              <div className="h-12 w-12 mx-auto rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-200">
-                <CircleDollarSign className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <h3 className="font-display text-base font-bold text-text-dark mb-2">Subscribe Securely</h3>
-              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
-                Join officially for <span className="font-semibold text-text-dark">50 MAD / month</span>. Payments are processed with bank-grade encryption.
-              </p>
-            </div>
+                  {/* Icon */}
+                  <div
+                    className={`mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl border ${step.accentBg} ${step.accentBorder} transition-transform duration-200 group-hover:scale-110`}
+                  >
+                    <Icon className={`h-5 w-5 ${step.accentText}`} />
+                  </div>
 
-            {/* Step 3 */}
-            <div className="relative bg-neutral-bg border border-border-custom rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 text-center group">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center justify-center h-7 w-7 rounded-full bg-indigo-600 text-white text-xs font-bold shadow-md shadow-indigo-600/20">
-                3
-              </span>
-              <div className="h-12 w-12 mx-auto rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-200">
-                <Lock className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <h3 className="font-display text-base font-bold text-text-dark mb-2">Unlock Exclusive Access</h3>
-              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
-                Dive into subscriber-only posts, behind-the-scenes footage, live Q&As, and members-only merch drops.
-              </p>
-            </div>
+                  <h3 className="font-display text-base font-bold text-text-dark">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                    {step.description}
+                  </p>
+
+                  {/* Connector line — visible on desktop between cards */}
+                  {index < steps.length - 1 && (
+                    <div className="pointer-events-none absolute -right-3 top-1/2 hidden h-px w-6 bg-border-custom md:block" />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* Simple, Transparent Pricing                                */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <section className="space-y-10">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-text-dark">
+        {/* ──────────────────────────────────────────────────────────── */}
+        {/*  PRICING                                                     */}
+        {/* ──────────────────────────────────────────────────────────── */}
+        <section className="pb-20 md:pb-28">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-text-dark sm:text-3xl">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-text-muted text-sm sm:text-base">
-              One membership. Full access. No hidden fees—ever.
+            <p className="mt-3 text-sm text-text-muted sm:text-base">
+              One membership. Full access. No hidden fees — ever.
             </p>
           </div>
 
-          {/* Pricing Card */}
-          <div className="max-w-md mx-auto">
-            <div className="relative bg-neutral-bg border border-border-custom rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-              {/* Decorative top accent bar */}
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500" />
+          <div className="mx-auto max-w-md">
+            <div className="relative overflow-hidden rounded-3xl border border-border-custom bg-neutral-bg shadow-sm transition-shadow duration-300 hover:shadow-lg">
+              {/* Top accent gradient */}
+              <div className="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
 
-              {/* Badge */}
-              <div className="flex items-center gap-2 mb-6">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 text-[11px] font-bold uppercase tracking-wider">
+              <div className="p-8 sm:p-10">
+                {/* Badge */}
+                <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-400">
                   <Zap className="h-3.5 w-3.5" />
                   Most Popular
-                </span>
+                </div>
+
+                {/* Plan name */}
+                <h3 className="font-display text-xl font-bold text-text-dark">
+                  Digital Fan Membership
+                </h3>
+                <p className="mt-1 text-sm text-text-muted">
+                  Everything you need to stay connected to your club.
+                </p>
+
+                {/* Price */}
+                <div className="mt-6 flex items-baseline gap-2">
+                  <span className="font-display text-5xl font-extrabold tracking-tight text-text-dark">
+                    50
+                  </span>
+                  <span className="text-sm font-semibold text-text-muted">
+                    MAD / month
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-text-muted">
+                  or{" "}
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    500 MAD / year
+                  </span>{" "}
+                  <span className="ml-1 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-400">
+                    Save 17%
+                  </span>
+                </p>
+
+                {/* Divider */}
+                <div className="my-8 h-px bg-border-custom" />
+
+                {/* Features */}
+                <ul className="space-y-4">
+                  {pricingFeatures.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-3 text-sm text-text-dark"
+                    >
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30">
+                        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA */}
+                <Link href="/" className="mt-10 block">
+                  <Button
+                    size="lg"
+                    className="group w-full gap-2 bg-emerald-600 font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 hover:shadow-xl hover:shadow-emerald-600/25"
+                  >
+                    Choose Your Club to Subscribe
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </Button>
+                </Link>
               </div>
-
-              {/* Plan Title */}
-              <h3 className="font-display text-xl font-bold text-text-dark mb-1">Digital Fan Membership</h3>
-              <p className="text-text-muted text-xs sm:text-sm mb-6">Everything you need to stay connected to your club.</p>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="font-display text-4xl sm:text-5xl font-extrabold text-text-dark">50</span>
-                <span className="text-text-muted text-sm font-semibold">MAD / month</span>
-              </div>
-              <p className="text-xs text-text-muted mb-8">
-                or <span className="font-semibold text-emerald-600 dark:text-emerald-400">500 MAD / year</span>{" "}
-                <span className="inline-flex items-center ml-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                  Save 17%
-                </span>
-              </p>
-
-              {/* Divider */}
-              <div className="h-px bg-border-custom mb-6" />
-
-              {/* Feature List */}
-              <ul className="space-y-3.5 mb-8">
-                {[
-                  "Access exclusive subscriber posts",
-                  "Direct forum interaction",
-                  "Official club digital badge",
-                ].map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-sm text-text-dark">
-                    <span className="mt-0.5 flex-shrink-0 h-5 w-5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center">
-                      <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                    </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <Link href="/" className="block">
-                <Button
-                  size="lg"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-600/15 transition-all cursor-pointer group gap-2"
-                >
-                  Choose Your Club to Subscribe
-                  <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-                </Button>
-              </Link>
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section id="features" className="space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Everything Your Sports Club Needs to Grow
+        {/* ──────────────────────────────────────────────────────────── */}
+        {/*  FEATURES / VALUE PROPS                                      */}
+        {/* ──────────────────────────────────────────────────────────── */}
+        <section className="pb-20 md:pb-28">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-text-dark sm:text-3xl">
+              Everything Your Club Needs to Grow
             </h2>
-            <p className="text-slate-650 dark:text-slate-400 text-sm sm:text-base">
-              Scale subscription revenue, connect deeply with fans, and manage everything from a centralized dashboard.
+            <p className="mt-3 text-sm text-text-muted sm:text-base">
+              Scale subscription revenue, connect deeply with fans, and manage
+              everything from one dashboard.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-slate-50 border border-slate-100 dark:bg-slate-900 dark:border-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200">
-              <div className="h-11 w-11 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center mb-6">
-                <Coins className="h-5.5 w-5.5 text-blue-650 dark:text-blue-400" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-2">Subscription Tiers</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Create tiered fan subscriptions (Bronze, Silver, Gold VIP) with recurring credit card payments and customized member perks.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-slate-50 border border-slate-100 dark:bg-slate-900 dark:border-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200">
-              <div className="h-11 w-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center mb-6">
-                <Shield className="h-5.5 w-5.5 text-emerald-650 dark:text-emerald-450" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-2">Paywalled Media Content</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Lock premium videos, live press-conferences, and interview podcasts. Provide high quality stream viewing only to active subscribers.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-slate-50 border border-slate-100 dark:bg-slate-900 dark:border-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200">
-              <div className="h-11 w-11 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/40 flex items-center justify-center mb-6">
-                <Users className="h-5.5 w-5.5 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-2">Fan Engagement Portal</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Allow fans to comment on announcements, vote in matchday polls, and chat with other members in a moderated clubhouse forum.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: Coins,
+                title: "Subscription Tiers",
+                description:
+                  "Create tiered fan subscriptions (Bronze, Silver, Gold VIP) with recurring payments and customized member perks.",
+                accentBg: "bg-emerald-50 dark:bg-emerald-950/30",
+                accentBorder:
+                  "border-emerald-100 dark:border-emerald-900/40",
+                accentText: "text-emerald-600 dark:text-emerald-400",
+              },
+              {
+                icon: Shield,
+                title: "Paywalled Content",
+                description:
+                  "Lock premium videos, live press-conferences, and interview podcasts. High quality streams for active subscribers only.",
+                accentBg: "bg-sky-50 dark:bg-sky-950/30",
+                accentBorder: "border-sky-100 dark:border-sky-900/40",
+                accentText: "text-sky-600 dark:text-sky-400",
+              },
+              {
+                icon: Users,
+                title: "Fan Engagement Portal",
+                description:
+                  "Allow fans to comment on announcements, vote in matchday polls, and chat in a moderated clubhouse forum.",
+                accentBg: "bg-violet-50 dark:bg-violet-950/30",
+                accentBorder:
+                  "border-violet-100 dark:border-violet-900/40",
+                accentText: "text-violet-600 dark:text-violet-400",
+              },
+            ].map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="group rounded-2xl border border-border-custom bg-neutral-bg p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+                >
+                  <div
+                    className={`mb-6 inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.accentBg} ${feature.accentBorder} transition-transform duration-200 group-hover:scale-110`}
+                  >
+                    <Icon className={`h-5 w-5 ${feature.accentText}`} />
+                  </div>
+                  <h3 className="font-display text-lg font-bold text-text-dark">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </section>
-        
       </div>
     </div>
   );
