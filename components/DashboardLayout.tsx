@@ -15,6 +15,7 @@ import {
   X,
   User,
   LogOut,
+  Users,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────────────
@@ -22,7 +23,7 @@ import {
  * ──────────────────────────────────────────────────────────────────── */
 
 const NAV_LINKS = [
-  { href: "/", label: "Discover", icon: Home },
+  { href: "/clubs", label: "Discover", icon: Home },
   { href: "/real-madrid/subscribe", label: "Subscriptions", icon: CreditCard },
   { href: "/admin/real-madrid", label: "Dashboard", icon: Trophy },
   { href: "/admin/real-madrid/settings", label: "Settings", icon: Settings },
