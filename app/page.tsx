@@ -70,6 +70,8 @@ const dictionary: Record<string, {
     statSupporters: "Registered Supporters",
     statPosts: "Premium Publications",
     statRevenue: "Average Club Revenue",
+    statCurrency: "MAD",
+    statPeriod: "/ mo",
     teamsTitle: "Meet the Teams",
     teamsSubtitle: "Find your colors and join the digital revolution.",
     teamsEmpty: "No active clubs registered yet",
@@ -120,6 +122,8 @@ const dictionary: Record<string, {
     statSupporters: "Supporters Inscrits",
     statPosts: "Publications Premium",
     statRevenue: "Revenu Moyen par Club",
+    statCurrency: "MAD",
+    statPeriod: "/ mois",
     teamsTitle: "Découvrez les Équipes",
     teamsSubtitle: "Trouvez vos couleurs et rejoignez la révolution digitale.",
     teamsEmpty: "Aucun club actif enregistré pour le moment",
@@ -170,6 +174,8 @@ const dictionary: Record<string, {
     statSupporters: "المشجعون المسجلون",
     statPosts: "المنشورات المميزة",
     statRevenue: "متوسط إيرادات النادي",
+    statCurrency: "درهم",
+    statPeriod: "/ شهر",
     teamsTitle: "تعرف على الفرق",
     teamsSubtitle: "اعثر على ألوانك وانضم إلى الثورة الرقمية.",
     teamsEmpty: "لا توجد أندية نشطة مسجلة بعد",
@@ -355,8 +361,11 @@ export default async function MarketingPage({
               </div>
             </div>
             <div className="bg-neutral-bg px-6 py-6 text-center transition-colors">
-              <div className="font-display text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
-                MAD {formattedAvgRevenue} <span className="text-xs font-semibold">/ mo</span>
+              <div className="flex items-baseline justify-center gap-1.5 font-display text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+                {!isRTL && <span className="text-lg font-bold uppercase">{t.statCurrency}</span>}
+                {formattedAvgRevenue}
+                {isRTL && <span className="text-lg font-bold uppercase">{t.statCurrency}</span>}
+                <span className="text-sm font-bold opacity-80">{t.statPeriod}</span>
               </div>
               <div className="mt-1 text-xs font-medium uppercase tracking-wider text-text-muted">
                 {t.statRevenue}
@@ -379,101 +388,52 @@ export default async function MarketingPage({
           </div>
 
           {clubs.length === 0 ? (
-            <div className="rounded-2xl border border-gray-800 bg-slate-900/50 py-12 text-center text-gray-400">
+            <div className="rounded-2xl border border-border-custom bg-neutral-bg-alt py-12 text-center text-text-muted">
               <Shield className="mx-auto mb-3 h-8 w-8 opacity-20" />
               <p className="text-sm font-medium">{t.teamsEmpty}</p>
             </div>
           ) : (
-            <div className="w-full overflow-hidden relative bg-[#030712] py-6 rounded-2xl">
-              <div className="flex w-[200%] animate-marquee space-x-8 whitespace-nowrap">
-
-                {/* Track 1 */}
-                <div className="flex space-x-8 shrink-0">
-                  {clubs.map((club) => (
-                    <Link
-                      key={`track1-${club.id}`}
-                      href={`/clubs/${club.slug}`}
-                      className="flex min-w-[300px] md:min-w-[350px] shrink-0 flex-col justify-between rounded-2xl border border-gray-800 bg-slate-900/50 p-6 transition-all duration-300 hover:border-emerald-700 hover:bg-slate-800/60"
-                    >
-                      <div>
-                        <div className="mb-4 flex items-center justify-between">
-                          <div
-                            className="flex h-12 w-12 items-center justify-center rounded-xl border text-sm font-bold"
-                            style={{
-                              color: club.primaryColor,
-                              borderColor: club.primaryColor + "33",
-                              backgroundColor: club.primaryColor + "10",
-                            }}
-                          >
-                            {club.logoInitials}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                            <span
-                              className="inline-block h-1.5 w-1.5 rounded-full"
-                              style={{ backgroundColor: club.primaryColor }}
-                            />
-                            {new Intl.NumberFormat("en-US", { notation: "compact" }).format(club.subscribersCount)} fans
-                          </div>
+            <div className="w-full relative bg-neutral-bg-alt border border-border-custom py-8 rounded-2xl shadow-sm">
+              <div className="flex overflow-x-auto gap-6 px-6 pb-4 snap-x snap-mandatory scroll-smooth">
+                {clubs.map((club) => (
+                  <Link
+                    key={club.id}
+                    href={`/clubs/${club.slug}`}
+                    className="flex w-[280px] md:w-[320px] shrink-0 snap-start flex-col justify-between rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm transition-all duration-300 hover:border-emerald-500 hover:shadow-md hover:-translate-y-1"
+                  >
+                    <div>
+                      <div className="mb-4 flex items-center justify-between">
+                        <div
+                          className="flex h-12 w-12 items-center justify-center rounded-xl border text-sm font-bold"
+                          style={{
+                            color: club.primaryColor,
+                            borderColor: club.primaryColor + "33",
+                            backgroundColor: club.primaryColor + "10",
+                          }}
+                        >
+                          {club.logoInitials}
                         </div>
-                        <h3 className="font-display text-base font-bold text-white truncate">
-                          {club.name}
-                        </h3>
-                        <p className="mt-1.5 text-xs text-gray-400 whitespace-normal line-clamp-2">
-                          {club.city} • Official digital hub
-                        </p>
-                      </div>
-                      <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-emerald-400">
-                        {t.teamsJoin}
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform hover:translate-x-1" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Track 2 — mirror */}
-                <div className="flex space-x-8 shrink-0" aria-hidden="true">
-                  {clubs.map((club) => (
-                    <Link
-                      key={`track2-${club.id}`}
-                      href={`/clubs/${club.slug}`}
-                      tabIndex={-1}
-                      className="flex min-w-[300px] md:min-w-[350px] shrink-0 flex-col justify-between rounded-2xl border border-gray-800 bg-slate-900/50 p-6 transition-all duration-300 hover:border-emerald-700 hover:bg-slate-800/60"
-                    >
-                      <div>
-                        <div className="mb-4 flex items-center justify-between">
-                          <div
-                            className="flex h-12 w-12 items-center justify-center rounded-xl border text-sm font-bold"
-                            style={{
-                              color: club.primaryColor,
-                              borderColor: club.primaryColor + "33",
-                              backgroundColor: club.primaryColor + "10",
-                            }}
-                          >
-                            {club.logoInitials}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                            <span
-                              className="inline-block h-1.5 w-1.5 rounded-full"
-                              style={{ backgroundColor: club.primaryColor }}
-                            />
-                            {new Intl.NumberFormat("en-US", { notation: "compact" }).format(club.subscribersCount)} fans
-                          </div>
+                        <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-muted">
+                          <span
+                            className="inline-block h-1.5 w-1.5 rounded-full"
+                            style={{ backgroundColor: club.primaryColor }}
+                          />
+                          {new Intl.NumberFormat("en-US", { notation: "compact" }).format(club.subscribersCount)} fans
                         </div>
-                        <h3 className="font-display text-base font-bold text-white truncate">
-                          {club.name}
-                        </h3>
-                        <p className="mt-1.5 text-xs text-gray-400 whitespace-normal line-clamp-2">
-                          {club.city} • Official digital hub
-                        </p>
                       </div>
-                      <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-emerald-400">
-                        {t.teamsJoin}
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform hover:translate-x-1" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-
+                      <h3 className="font-display text-base font-bold text-text-dark truncate">
+                        {club.name}
+                      </h3>
+                      <p className="mt-1.5 text-xs text-text-muted whitespace-normal line-clamp-2">
+                        {club.city} • Official digital hub
+                      </p>
+                    </div>
+                    <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      {t.teamsJoin}
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           )}
@@ -496,26 +456,23 @@ export default async function MarketingPage({
             {steps.map((step, index) => {
               const Icon = step.icon;
               return (
-                <div
-                  key={step.number}
-                  className="group relative rounded-2xl border border-border-custom bg-neutral-bg p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-                >
-                  <span
-                    className={`font-display text-5xl font-extrabold ${step.numberColor} opacity-10 absolute right-6 top-4 select-none`}
-                  >
-                    {step.number}
-                  </span>
+                <div key={step.number} className="relative group">
                   <div
-                    className={`mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl border ${step.accentBg} ${step.accentBorder} transition-transform duration-200 group-hover:scale-110`}
+                    className="relative overflow-hidden flex flex-col items-start p-6 rounded-2xl border border-border-custom bg-neutral-bg shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
                   >
-                    <Icon className={`h-5 w-5 ${step.accentText}`} />
+                    <span className="absolute bottom-4 right-4 text-6xl md:text-7xl font-extrabold text-slate-800/10 dark:text-slate-200/5 select-none font-display">
+                      {step.number}
+                    </span>
+                    <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-500 mb-6">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-display text-base font-bold text-text-dark">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                      {step.description}
+                    </p>
                   </div>
-                  <h3 className="font-display text-base font-bold text-text-dark">
-                    {step.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-text-muted">
-                    {step.description}
-                  </p>
                   {index < steps.length - 1 && (
                     <div className="pointer-events-none absolute -right-3 top-1/2 hidden h-px w-6 bg-border-custom md:block" />
                   )}
@@ -628,12 +585,12 @@ export default async function MarketingPage({
         {/* ──────────────────────────────────────────────────────────── */}
         {/*  FEATURES / VALUE PROPS (Fan Focused)                        */}
         {/* ──────────────────────────────────────────────────────────── */}
-        <section className="pb-20 md:pb-28">
+        <section className="w-full bg-neutral-bg py-16 md:py-24 transition-colors duration-200">
           <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="font-display text-2xl font-bold tracking-tight text-text-dark sm:text-3xl">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-text-dark sm:text-4xl">
               {t.featuresTitle}
             </h2>
-            <p className="mt-3 text-sm text-text-muted sm:text-base">
+            <p className="mx-auto mt-4 max-w-2xl text-base text-text-muted">
               {t.featuresSubtitle}
             </p>
           </div>
@@ -644,37 +601,26 @@ export default async function MarketingPage({
                 icon: Coins,
                 title: t.feature1Title,
                 description: t.feature1Desc,
-                accentBg: "bg-emerald-50 dark:bg-emerald-950/30",
-                accentBorder: "border-emerald-100 dark:border-emerald-900/40",
-                accentText: "text-emerald-600 dark:text-emerald-400",
               },
               {
                 icon: Shield,
                 title: t.feature2Title,
                 description: t.feature2Desc,
-                accentBg: "bg-sky-50 dark:bg-sky-950/30",
-                accentBorder: "border-sky-100 dark:border-sky-900/40",
-                accentText: "text-sky-600 dark:text-sky-400",
               },
               {
                 icon: Users,
                 title: t.feature3Title,
                 description: t.feature3Desc,
-                accentBg: "bg-violet-50 dark:bg-violet-950/30",
-                accentBorder: "border-violet-100 dark:border-violet-900/40",
-                accentText: "text-violet-600 dark:text-violet-400",
               },
             ].map((feature) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={feature.title}
-                  className="group rounded-2xl border border-border-custom bg-neutral-bg p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+                  className="p-6 bg-neutral-bg-alt border border-border-custom rounded-2xl shadow-sm"
                 >
-                  <div
-                    className={`mb-6 inline-flex h-11 w-11 items-center justify-center rounded-xl border ${feature.accentBg} ${feature.accentBorder} transition-transform duration-200 group-hover:scale-110`}
-                  >
-                    <Icon className={`h-5 w-5 ${feature.accentText}`} />
+                  <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-500 mb-6 transition-colors duration-200">
+                    <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="font-display text-lg font-bold text-text-dark">
                     {feature.title}
