@@ -29,6 +29,15 @@ const config: Config = {
         sans: ["var(--font-outfit)", "system-ui", "-apple-system", "sans-serif"],
         display: ["var(--font-jakarta)", "system-ui", "-apple-system", "sans-serif"],
       },
+      animation: {
+        marquee: "marquee 35s linear infinite",
+      },
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-50%)" }, // <-- Hada huwa s-sarout d spatial loop!
+        },
+      },
     },
   },
   plugins: [],

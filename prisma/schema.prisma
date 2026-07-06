@@ -1,0 +1,57 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  role          String         @default("FAN") // "FAN" aw "CLUB_ADMIN"
+  createdAt     DateTime       @default(now())
+  
+  subscriptions Subscription[]
+}
+
+model Club {
+  id               String         @id @default(uuid())
+  name             String
+  slug             String         @unique // "raja-ca", "wydad-ac"
+  city             String
+  logoInitials     String
+  primaryColor     String         @default("#10B981")
+  subscribersCount Int            @default(0)
+  createdAt        DateTime       @default(now())
+
+  posts         Post[]
+  subscriptions Subscription[]
+}
+
+model Post {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  isPremium   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  clubId      String
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  status    String   @default("ACTIVE") // "ACTIVE", "EXPIRED"
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}

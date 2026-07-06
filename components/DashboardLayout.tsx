@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
+import { logoutAction } from "@/lib/actions";
 import {
   Home,
   CreditCard,
@@ -16,6 +17,7 @@ import {
   User,
   LogOut,
   Users,
+  Globe,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────────────
@@ -24,9 +26,6 @@ import {
 
 const NAV_LINKS = [
   { href: "/clubs", label: "Discover", icon: Home },
-  { href: "/real-madrid/subscribe", label: "Subscriptions", icon: CreditCard },
-  { href: "/admin/real-madrid", label: "Dashboard", icon: Trophy },
-  { href: "/admin/real-madrid/settings", label: "Settings", icon: Settings },
 ];
 
 /* ────────────────────────────────────────────────────────────────────
@@ -35,12 +34,30 @@ const NAV_LINKS = [
 
 export default function DashboardLayout({
   children,
+  isAdmin = false,
+  isLoggedIn = false,
 }: {
   children: React.ReactNode;
+  isAdmin?: boolean;
+  isLoggedIn?: boolean;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
+  const currentLang = (searchParams.get("lang") || "en").toUpperCase();
+
+  const LANGS = ["EN", "FR", "AR"] as const;
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logoutAction();
+      router.refresh();
+      router.push("/");
+    });
+  };
 
   /* Close mobile drawer on route change */
   useEffect(() => {
@@ -120,38 +137,63 @@ export default function DashboardLayout({
           </div>
 
           {/* ── Right: Actions ───────────────────────────────────── */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3 sm:gap-4">
+            
+            {/* Conditional Context Button: Club Admin */}
+            {isAdmin && (
+              <Link
+                href="/dashboard/club"
+                className="hidden items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50 sm:flex"
+              >
+                <Trophy className="h-4 w-4" />
+                Admin Dashboard
+              </Link>
+            )}
+
+            <div className="flex items-center gap-1 text-xs font-semibold select-none">
+              {LANGS.map((lang, i) => (
+                <React.Fragment key={lang}>
+                  {i > 0 && <span className="opacity-30 text-text-muted">|</span>}
+                  <Link
+                    href={`${pathname}?lang=${lang.toLowerCase()}`}
+                    className={`transition-colors duration-200 ${
+                      currentLang === lang
+                        ? "text-emerald-500 font-bold"
+                        : "text-text-muted hover:text-emerald-500"
+                    }`}
+                  >
+                    {lang}
+                  </Link>
+                </React.Fragment>
+              ))}
+            </div>
+
             <ThemeToggle />
 
-            {/* Notification bell */}
-            <button
-              className="relative rounded-xl p-2 text-text-muted transition-colors hover:bg-neutral-bg-alt hover:text-text-dark active:scale-95"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-neutral-bg" />
-            </button>
-
-            {/* Separator */}
-            <div className="hidden h-7 w-px bg-border-custom sm:block" />
-
-            {/* User avatar */}
-            <Link
-              href="/admin/real-madrid/settings"
-              className="group flex items-center gap-2.5"
-            >
-              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-border-custom bg-neutral-bg-alt transition-all group-hover:border-emerald-500">
-                <User className="h-4 w-4 text-text-muted transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                disabled={isPending}
+                className="hidden rounded-lg bg-rose-50 px-4 py-2 text-sm font-bold text-rose-600 shadow-sm transition-colors hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-950/50 sm:block"
+              >
+                {isPending ? "Signing Out..." : "Sign Out"}
+              </button>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="rounded-lg px-3 py-2 text-sm font-bold text-text-muted hover:text-text-dark transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-emerald-600"
+                >
+                  Sign Up
+                </Link>
               </div>
-              <div className="hidden text-left sm:block">
-                <span className="block text-xs font-semibold leading-none text-text-dark transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                  Alex Morgan
-                </span>
-                <span className="mt-0.5 block text-[10px] leading-none text-text-muted">
-                  Fan Member
-                </span>
-              </div>
-            </Link>
+            )}
 
             {/* Mobile burger — only visible < md */}
             <button
@@ -240,13 +282,24 @@ export default function DashboardLayout({
               </span>
             </div>
           </div>
-          <Link
-            href="/login"
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
-          >
-            <LogOut className="h-4 w-4 flex-shrink-0" />
-            Sign Out
-          </Link>
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              disabled={isPending}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              {isPending ? "Signing Out..." : "Sign Out"}
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
+            >
+              <User className="h-4 w-4 flex-shrink-0" />
+              Login
+            </Link>
+          )}
         </div>
       </div>
 
