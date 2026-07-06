@@ -51,6 +51,16 @@ export default function DashboardLayout({
 
   const LANGS = ["EN", "FR", "AR"] as const;
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const handleLogout = () => {
     startTransition(async () => {
       await logoutAction();
@@ -92,8 +102,14 @@ export default function DashboardLayout({
       {/* ═══════════════════════════════════════════════════════════ */}
       {/*  TOP NAVIGATION BAR                                       */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-50 w-full border-b border-border-custom bg-neutral-bg/80 backdrop-blur-xl transition-colors duration-300">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <header
+        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-in-out ${
+          isScrolled
+            ? "w-[85%] max-w-5xl px-4 py-2 bg-neutral-bg/80 backdrop-blur-md border border-border-custom rounded-2xl shadow-lg"
+            : "w-[95%] max-w-7xl px-6 py-4 bg-transparent border-transparent"
+        }`}
+      >
+        <div className="mx-auto flex h-16 w-full items-center justify-between">
           {/* ── Left: Logo ───────────────────────────────────────── */}
           <div className="flex items-center gap-8">
             <Link
