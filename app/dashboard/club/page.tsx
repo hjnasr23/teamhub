@@ -138,16 +138,26 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
   const conversionRate = allFansCount > 0 ? ((activeMembers / allFansCount) * 100).toFixed(1) : "0.0";
 
   return (
-    <div dir={isRTL ? "rtl" : "ltr"} className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-dark dark:text-white">
-          {t.clubOverview}
-        </h1>
-        <p className="mt-1 text-sm text-text-muted">
-          {t.clubOverviewDesc}
-        </p>
-      </div>
+    <div className="pt-28 md:pt-32 px-4 md:px-8 w-full bg-neutral-bg min-h-screen text-text-dark transition-colors duration-200">
+      <div dir={isRTL ? "rtl" : "ltr"} className="mx-auto max-w-5xl space-y-8 pb-12">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8 border-b border-border-custom pb-6">
+          <div 
+            className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-border-custom text-white font-bold shadow-sm"
+            style={{ backgroundColor: club.primaryColor || '#10B981' }}
+          >
+            {club.logoInitials}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-text-dark dark:text-white flex items-center gap-2">
+              <span className="font-bold text-emerald-500">{club.name}</span>
+              <span className="text-text-muted font-medium text-xl">/ {t.clubOverview}</span>
+            </h1>
+            <p className="mt-1 text-sm text-text-muted">
+              {t.clubOverviewDesc}
+            </p>
+          </div>
+        </div>
 
       {/* 1. Analytics Overview Layout */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -247,6 +257,7 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
             </table>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
