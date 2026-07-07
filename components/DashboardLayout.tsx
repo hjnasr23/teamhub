@@ -47,9 +47,44 @@ export default function DashboardLayout({
   const drawerRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
-  const currentLang = (searchParams.get("lang") || "en").toUpperCase();
+
+  const langKey = (searchParams.get("lang") || "en").toLowerCase() as "en" | "fr" | "ar";
+  const currentLang = langKey.toUpperCase();
+  const isRTL = langKey === "ar";
 
   const LANGS = ["EN", "FR", "AR"] as const;
+
+  const navTranslations = {
+    en: {
+      discover: "Discover",
+      login: "Login",
+      signUp: "Sign Up",
+      signOut: "Sign Out",
+      signingOut: "Signing Out...",
+      adminDashboard: "Admin Dashboard",
+      menu: "Menu"
+    },
+    fr: {
+      discover: "Découvrir",
+      login: "Connexion",
+      signUp: "S'inscrire",
+      signOut: "Se déconnecter",
+      signingOut: "Déconnexion...",
+      adminDashboard: "Tableau de Bord Admin",
+      menu: "Menu"
+    },
+    ar: {
+      discover: "اكتشف",
+      login: "تسجيل الدخول",
+      signUp: "إنشاء حساب",
+      signOut: "تسجيل الخروج",
+      signingOut: "جاري تسجيل الخروج...",
+      adminDashboard: "لوحة التحكم للمشرف",
+      menu: "القائمة"
+    }
+  } as const;
+
+  const t = navTranslations[langKey];
 
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -98,7 +133,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-neutral-bg-alt text-text-dark transition-colors duration-300">
+    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-neutral-bg-alt text-text-dark transition-colors duration-300">
       {/* ═══════════════════════════════════════════════════════════ */}
       {/*  TOP NAVIGATION BAR                                       */}
       {/* ═══════════════════════════════════════════════════════════ */}
@@ -113,7 +148,7 @@ export default function DashboardLayout({
           {/* ── Left: Logo ───────────────────────────────────────── */}
           <div className="flex items-center gap-8">
             <Link
-              href="/"
+              href={`/?lang=${langKey}`}
               className="flex flex-shrink-0 items-center transition-opacity hover:opacity-80"
             >
               <Image
@@ -131,17 +166,18 @@ export default function DashboardLayout({
             <nav className="hidden items-center gap-1 md:flex">
               {NAV_LINKS.map((link) => {
                 const active = isActive(link.href);
+                const label = link.href === "/clubs" ? t.discover : link.label;
                 return (
                   <Link
                     key={link.href}
-                    href={link.href}
+                    href={`${link.href}?lang=${langKey}`}
                     className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ${
                       active
                         ? "text-text-dark"
                         : "text-text-muted hover:text-text-dark"
                     }`}
                   >
-                    {link.label}
+                    {label}
                     {/* Active indicator — thin bottom bar */}
                     {active && (
                       <span className="absolute inset-x-1 -bottom-[17px] h-[2px] rounded-full bg-emerald-600 dark:bg-emerald-400" />
@@ -158,30 +194,34 @@ export default function DashboardLayout({
             {/* Conditional Context Button: Club Admin */}
             {isAdmin && (
               <Link
-                href="/dashboard/club"
+                href={`/dashboard/club?lang=${langKey}`}
                 className="hidden items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50 sm:flex"
               >
                 <Trophy className="h-4 w-4" />
-                Admin Dashboard
+                {t.adminDashboard}
               </Link>
             )}
 
             <div className="flex items-center gap-1 text-xs font-semibold select-none">
-              {LANGS.map((lang, i) => (
-                <React.Fragment key={lang}>
-                  {i > 0 && <span className="opacity-30 text-text-muted">|</span>}
-                  <Link
-                    href={`${pathname}?lang=${lang.toLowerCase()}`}
-                    className={`transition-colors duration-200 ${
-                      currentLang === lang
-                        ? "text-emerald-500 font-bold"
-                        : "text-text-muted hover:text-emerald-500"
-                    }`}
-                  >
-                    {lang}
-                  </Link>
-                </React.Fragment>
-              ))}
+              {LANGS.map((lang, i) => {
+                const switcherParams = new URLSearchParams(searchParams.toString());
+                switcherParams.set("lang", lang.toLowerCase());
+                return (
+                  <React.Fragment key={lang}>
+                    {i > 0 && <span className="opacity-30 text-text-muted">|</span>}
+                    <Link
+                      href={`${pathname}?${switcherParams.toString()}`}
+                      className={`transition-colors duration-200 ${
+                        currentLang === lang
+                          ? "text-emerald-500 font-bold"
+                          : "text-text-muted hover:text-emerald-500"
+                      }`}
+                    >
+                      {lang}
+                    </Link>
+                  </React.Fragment>
+                );
+              })}
             </div>
 
             <ThemeToggle />
@@ -192,21 +232,21 @@ export default function DashboardLayout({
                 disabled={isPending}
                 className="hidden rounded-lg bg-rose-50 px-4 py-2 text-sm font-bold text-rose-600 shadow-sm transition-colors hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-950/50 sm:block"
               >
-                {isPending ? "Signing Out..." : "Sign Out"}
+                {isPending ? t.signingOut : t.signOut}
               </button>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
                 <Link
-                  href="/login"
+                  href={`/login?lang=${langKey}`}
                   className="rounded-lg px-3 py-2 text-sm font-bold text-text-muted hover:text-text-dark transition-colors"
                 >
-                  Login
+                  {t.login}
                 </Link>
                 <Link
-                  href="/register"
+                  href={`/register?lang=${langKey}`}
                   className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-emerald-600"
                 >
-                  Sign Up
+                  {t.signUp}
                 </Link>
               </div>
             )}
@@ -246,7 +286,7 @@ export default function DashboardLayout({
       >
         {/* Drawer header */}
         <div className="flex h-16 items-center justify-between border-b border-border-custom px-5">
-          <span className="text-sm font-semibold text-text-dark">Menu</span>
+          <span className="text-sm font-semibold text-text-dark">{t.menu}</span>
           <button
             onClick={() => setMobileOpen(false)}
             className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-neutral-bg-alt hover:text-text-dark"
@@ -260,10 +300,11 @@ export default function DashboardLayout({
           {NAV_LINKS.map((link) => {
             const Icon = link.icon;
             const active = isActive(link.href);
+            const label = link.href === "/clubs" ? t.discover : link.label;
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={`${link.href}?lang=${langKey}`}
                 className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
                   active
                     ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/10"
@@ -277,7 +318,7 @@ export default function DashboardLayout({
                       : "text-text-muted group-hover:text-emerald-600 dark:group-hover:text-emerald-400"
                   }`}
                 />
-                {link.label}
+                {label}
               </Link>
             );
           })}
@@ -305,15 +346,15 @@ export default function DashboardLayout({
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />
-              {isPending ? "Signing Out..." : "Sign Out"}
+              {isPending ? t.signingOut : t.signOut}
             </button>
           ) : (
             <Link
-              href="/login"
+              href={`/login?lang=${langKey}`}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
             >
               <User className="h-4 w-4 flex-shrink-0" />
-              Login
+              {t.login}
             </Link>
           )}
         </div>
