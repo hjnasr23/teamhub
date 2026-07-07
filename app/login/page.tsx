@@ -1,270 +1,142 @@
-"use client";
+import Link from 'next/link';
 
-import React, { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { ArrowRight, Lock, Mail, Users, Building2, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { loginAction } from "@/lib/actions";
-
-/* ────────────────────────────────────────────────────────────────────
- *  i18n Dictionary — en / fr / ar
- * ──────────────────────────────────────────────────────────────────── */
-
-const loginTranslations = {
+// 1. Local Text Dictionary supporting Arabic, French, and English
+const dict = {
   en: {
-    returnHome: "← Return to Home",
-    title: "Sign in to TEAMHUB",
-    subtitle: "Access your custom digital workspace",
-    fanTab: "Supporter Workspace",
-    adminTab: "Club Admin Portal",
-    emailLabel: "Email address",
-    emailPlaceholderFan: "fan@teamhub.ma",
-    emailPlaceholderAdmin: "admin@teamhub.ma",
-    passwordLabel: "Password",
-    forgotPassword: "Forgot password?",
-    verifying: "Verifying...",
-    signInFan: "Sign In as Supporter",
-    signInAdmin: "Sign In as Admin",
-    noAccount: "Don't have an account?",
-    signUp: "Sign up",
-    defaultError: "Invalid login credentials.",
+    title: "Sign In to TEAMHUB",
+    subtitle: "Access your personalized sports subscription dashboard",
+    email: "Email Address",
+    emailPlaceholder: "fan@teamhub.ma",
+    password: "Password",
+    passwordPlaceholder: "••••••••",
+    submitBtn: "Sign In",
+    dontHaveAccount: "Don't have an account?",
+    signUp: "Sign Up",
+    tagline: "Fuel the game,\nmonetize the passion.",
+    marketingText: "Welcome back to the portal built for modern sports teams. Manage your active club memberships, view premium content, and follow your favorite team's journey."
   },
   fr: {
-    returnHome: "← Retour à l'accueil",
-    title: "Connectez-vous à TEAMHUB",
-    subtitle: "Accédez à votre espace numérique personnalisé",
-    fanTab: "Espace Supporter",
-    adminTab: "Portail Admin Club",
-    emailLabel: "Adresse e-mail",
-    emailPlaceholderFan: "fan@teamhub.ma",
-    emailPlaceholderAdmin: "admin@teamhub.ma",
-    passwordLabel: "Mot de passe",
-    forgotPassword: "Mot de passe oublié ?",
-    verifying: "Vérification...",
-    signInFan: "Se connecter en tant que Supporter",
-    signInAdmin: "Se connecter en tant qu'Admin",
-    noAccount: "Vous n'avez pas de compte ?",
+    title: "Connexion à TEAMHUB",
+    subtitle: "Accédez à votre tableau de bord d'abonnement sportif personnalisé",
+    email: "Adresse Email",
+    emailPlaceholder: "fan@teamhub.ma",
+    password: "Mot de passe",
+    passwordPlaceholder: "••••••••",
+    submitBtn: "Se connecter",
+    dontHaveAccount: "Vous n'avez pas de compte ?",
     signUp: "S'inscrire",
-    defaultError: "Identifiants de connexion invalides.",
+    tagline: "Propulsez le jeu,\nmonétisez la passion.",
+    marketingText: "Bon retour sur la plateforme conçue pour les équipes sportives modernes. Gérez vos abonnements, accédez au contenu exclusif et suivez le parcours de votre club préféré."
   },
   ar: {
-    returnHome: "→ العودة إلى الرئيسية",
-    title: "تسجيل الدخول إلى TEAMHUB",
-    subtitle: "الوصول إلى مساحة العمل الرقمية الخاصة بك",
-    fanTab: "مساحة المشجع",
-    adminTab: "بوابة إدارة النادي",
-    emailLabel: "البريد الإلكتروني",
-    emailPlaceholderFan: "fan@teamhub.ma",
-    emailPlaceholderAdmin: "admin@teamhub.ma",
-    passwordLabel: "كلمة المرور",
-    forgotPassword: "نسيت كلمة المرور؟",
-    verifying: "جاري التحقق...",
-    signInFan: "تسجيل الدخول كمشجع",
-    signInAdmin: "تسجيل الدخول كمشرف",
-    noAccount: "ليس لديك حساب؟",
+    title: "تسجيل الدخول",
+    subtitle: "الولوج إلى لوحة التحكم الرياضية المخصصة لك",
+    email: "البريد الإلكتروني",
+    emailPlaceholder: "fan@teamhub.ma",
+    password: "كلمة المرور",
+    passwordPlaceholder: "••••••••",
+    submitBtn: "تسجيل الدخول",
+    dontHaveAccount: "ليس لديك حساب؟",
     signUp: "إنشاء حساب",
-    defaultError: "بيانات الدخول غير صحيحة.",
-  },
-} as const;
+    tagline: "أشعل اللعبة،\nواستثمر الشغف.",
+    marketingText: "مرحبًا بك مجددًا في المنصة المصممة للفرق الرياضية الحديثة. أدر اشتراكاتك النشطة، واطلع على المحتوى الحصري، وتابع مسيرة فريقك المفضل."
+  }
+};
 
-/* ────────────────────────────────────────────────────────────────────
- *  Login Page Component
- * ──────────────────────────────────────────────────────────────────── */
+type Props = {
+  searchParams: Promise<{ lang?: string }>;
+};
 
-export default function LoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const langKey = (searchParams.get("lang") || "en") as "en" | "fr" | "ar";
-  const t = loginTranslations[langKey] || loginTranslations.en;
-  const isRTL = langKey === "ar";
-
-  const [role, setRole] = useState<"FAN" | "CLUB_ADMIN">("FAN");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("role", role);
-
-    startTransition(async () => {
-      const response = await loginAction(formData);
-      if (response.success && response.data) {
-        router.refresh();
-        if (response.data.role === "CLUB_ADMIN") {
-          router.push(`/dashboard/club?lang=${langKey}`);
-        } else {
-          router.push(`/dashboard/fan?lang=${langKey}`);
-        }
-      } else {
-        setError(response.error || t.defaultError);
-      }
-    });
-  };
+export default async function LoginPage({ searchParams }: Props) {
+  const resolvedParams = await searchParams;
+  const lang = (resolvedParams.lang === 'ar' || resolvedParams.lang === 'fr') ? resolvedParams.lang : 'en';
+  const t = dict[lang];
+  const isRTL = lang === 'ar';
 
   return (
-    <div dir={isRTL ? "rtl" : "ltr"} className="fixed inset-0 z-[100] flex min-h-screen items-center justify-center overflow-y-auto bg-neutral-bg-alt p-4 dark:bg-slate-950 sm:p-6">
+    <main
+      dir={isRTL ? 'rtl' : 'ltr'}
+      className="min-h-screen w-full bg-slate-50 dark:bg-[#060b13] text-gray-900 dark:text-white pt-44 pb-16 px-4 sm:px-6 md:px-12 flex items-center justify-center transition-all duration-200"
+    >
+      {/* Structural Fluid Grid Container */}
+      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
 
-      {/* Subtle Stripe-style Radial Background */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-200/50 via-neutral-bg-alt to-neutral-bg-alt dark:from-slate-800/40 dark:via-slate-950 dark:to-slate-950" />
+        {/* Left Side: Fully Flexible Form (Columns 1 to 6) */}
+        <div className="col-span-1 md:col-span-6 w-full flex flex-col justify-center">
+          <div className="bg-white dark:bg-[#0c1420] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8 md:p-10 shadow-2xl w-full">
 
-      {/* Center Authentication Panel */}
-      <div className="relative w-full max-w-[420px] rounded-2xl border border-border-custom bg-white p-8 shadow-2xl dark:bg-slate-900">
+            <div className="mb-8">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
+                {t.title}
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t.subtitle}
+              </p>
+            </div>
 
-        {/* Return to Home Link */}
-        <div className="mb-5 flex">
-          <Link
-            href={`/?lang=${langKey}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-muted hover:text-emerald-500 transition-colors duration-200"
-          >
-            {t.returnHome}
-          </Link>
+            <form className="space-y-5">
+              {/* Email Address */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-xs font-semibold tracking-wider text-gray-600 dark:text-gray-400 uppercase">
+                  {t.email}
+                </label>
+                <input
+                  type="email"
+                  placeholder={t.emailPlaceholder}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#111a2e] border border-gray-300 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500 text-sm transition-colors autofill:bg-gray-50 dark:autofill:bg-[#111a2e]"
+                  required
+                />
+              </div>
+
+              {/* Password */}
+              <div className="flex flex-col space-y-2">
+                <label className="text-xs font-semibold tracking-wider text-gray-600 dark:text-gray-400 uppercase">
+                  {t.password}
+                </label>
+                <input
+                  type="password"
+                  placeholder={t.passwordPlaceholder}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#111a2e] border border-gray-300 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500 text-sm transition-colors autofill:bg-gray-50 dark:autofill:bg-[#111a2e]"
+                  required
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full mt-2 py-3 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold rounded-xl text-center text-sm transition-all shadow-lg shadow-emerald-500/10"
+              >
+                {t.submitBtn}
+              </button>
+            </form>
+
+            {/* Bottom Link Redirect - Safely updated destination from /signup to /register */}
+            <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+              {t.dontHaveAccount}{' '}
+              <Link
+                href={`/register?lang=${lang}`}
+                className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+              >
+                {t.signUp}
+              </Link>
+            </div>
+
+          </div>
         </div>
 
-        {/* Header */}
-        <div className="mb-6 text-center">
-          <h1 className="font-display text-2xl font-bold tracking-tight text-text-dark dark:text-white">
-            {t.title}
-          </h1>
-          <p className="mt-2 text-sm text-text-muted">
-            {t.subtitle}
+        {/* Right Side: Localized Marketing Tagline (Columns 7 to 12) */}
+        <div className={`hidden md:flex col-span-1 md:col-span-6 flex-col justify-center text-start px-8 ${isRTL ? 'border-r border-gray-200 dark:border-gray-800/60' : 'border-l border-gray-200 dark:border-gray-800/60'}`}>
+          <h2 className="text-3xl lg:text-4xl font-black text-gray-900 dark:text-white leading-tight whitespace-pre-line mb-6">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-500">
+              {t.tagline}
+            </span>
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed max-w-lg">
+            {t.marketingText}
           </p>
         </div>
 
-        {/* Error Banner */}
-        {error && (
-          <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs text-rose-800 dark:border-rose-950/30 dark:bg-rose-950/10 dark:text-rose-400">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-6">
-
-          {/* Dual-Segmented Role Controller */}
-          <div className="flex w-full rounded-xl bg-neutral-bg-alt p-1 dark:bg-slate-950">
-            <button
-              type="button"
-              onClick={() => { setRole("FAN"); setError(null); }}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all ${
-                role === "FAN"
-                  ? "bg-white text-indigo-600 shadow-sm dark:bg-slate-800 dark:text-indigo-400"
-                  : "text-text-muted hover:text-text-dark dark:hover:text-slate-300"
-              }`}
-            >
-              <Users className="h-4 w-4" />
-              {t.fanTab}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setRole("CLUB_ADMIN"); setError(null); }}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all ${
-                role === "CLUB_ADMIN"
-                  ? "bg-white text-emerald-600 shadow-sm dark:bg-slate-800 dark:text-emerald-400"
-                  : "text-text-muted hover:text-text-dark dark:hover:text-slate-300"
-              }`}
-            >
-              <Building2 className="h-4 w-4" />
-              {t.adminTab}
-            </button>
-          </div>
-
-          {/* Form Inputs */}
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-text-dark dark:text-slate-200">
-                {t.emailLabel}
-              </label>
-              <div className="relative">
-                <div className={`pointer-events-none absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
-                  <Mail className="h-4 w-4 text-text-muted" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={role === "CLUB_ADMIN" ? t.emailPlaceholderAdmin : t.emailPlaceholderFan}
-                  className={`w-full rounded-xl border border-border-custom bg-white py-2.5 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark placeholder-text-muted transition-colors focus:outline-none focus:ring-1 dark:bg-slate-900 dark:text-white ${
-                    role === "CLUB_ADMIN"
-                      ? "focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-400"
-                      : "focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                  }`}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-text-dark dark:text-slate-200">
-                  {t.passwordLabel}
-                </label>
-                <Link
-                  href="#"
-                  className={`text-xs font-semibold hover:underline ${
-                    role === "CLUB_ADMIN"
-                      ? "text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
-                      : "text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-                  }`}
-                >
-                  {t.forgotPassword}
-                </Link>
-              </div>
-              <div className="relative">
-                <div className={`pointer-events-none absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
-                  <Lock className="h-4 w-4 text-text-muted" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className={`w-full rounded-xl border border-border-custom bg-white py-2.5 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark placeholder-text-muted transition-colors focus:outline-none focus:ring-1 dark:bg-slate-900 dark:text-white ${
-                    role === "CLUB_ADMIN"
-                      ? "focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-400"
-                      : "focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                  }`}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Dynamic Submit Button */}
-          <Button
-            type="submit"
-            disabled={isPending}
-            className={`w-full gap-2 font-bold text-white shadow-md transition-colors ${
-              role === "CLUB_ADMIN"
-                ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
-                : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-            }`}
-          >
-            {isPending ? t.verifying : (role === "CLUB_ADMIN" ? t.signInAdmin : t.signInFan)}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-
-        </form>
-
-        <div className="mt-6 text-center text-sm text-text-muted">
-          {t.noAccount}{" "}
-          <Link href={`/signup?lang=${langKey}`} className={`font-semibold transition-colors hover:underline ${
-            role === "CLUB_ADMIN"
-              ? "text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
-              : "text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-          }`}>
-            {t.signUp}
-          </Link>
-        </div>
-
       </div>
-    </div>
+    </main>
   );
 }

@@ -220,7 +220,7 @@ export default function FanDashboard() {
   }
 
   return (
-    <main className="pt-32 min-h-screen bg-neutral-bg text-text-dark px-4 md:px-8">
+    <main className="pt-36 pb-16 min-h-screen bg-neutral-bg text-text-dark px-4 md:px-8">
       <div dir={isRTL ? "rtl" : "ltr"} className="mx-auto max-w-6xl space-y-8 pb-12">
         {/* Header */}
         <div>

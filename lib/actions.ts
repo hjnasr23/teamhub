@@ -213,33 +213,15 @@ export async function getFanData(): Promise<
       createdAt: sub.createdAt,
     }));
 
-    // Simulated activity log (until a dedicated ActivityLog table is added)
-    const activities = [
-      {
-        id: 1,
-        action: `Liked ${subscriptions[0]?.club.name ?? "a club"}'s Locker room post`,
-        time: "2 hours ago",
-        iconType: "heart" as const,
-        iconColor: "text-rose-500",
-        bg: "bg-rose-50 dark:bg-rose-950/20",
-      },
-      {
-        id: 2,
-        action: "Commented on Wydad Athletic Club's announcement",
-        time: "Yesterday",
-        iconType: "message" as const,
-        iconColor: "text-blue-500",
-        bg: "bg-blue-50 dark:bg-blue-950/20",
-      },
-      {
-        id: 3,
-        action: `Renewed ${subscriptions[0]?.club.name ?? "a club"} membership`,
-        time: "Last week",
-        iconType: "shield" as const,
-        iconColor: "text-emerald-500",
-        bg: "bg-emerald-50 dark:bg-emerald-950/20",
-      },
-    ];
+    // Dynamic activity log based on actual Prisma subscriptions (fallback until a dedicated ActivityLog table is added)
+    const activities = mappedSubscriptions.slice(0, 3).map((sub, idx) => ({
+      id: idx + 1,
+      action: `Renewed ${sub.clubName} membership tier`,
+      time: new Date(sub.createdAt).toLocaleDateString(),
+      iconType: "shield" as const,
+      iconColor: "text-emerald-500",
+      bg: "bg-emerald-50 dark:bg-emerald-950/20",
+    }));
 
     return {
       success: true,
@@ -306,6 +288,7 @@ export async function createTenantAction(formData: FormData): Promise<ActionResp
           firstName: adminFirstName,
           lastName: adminLastName,
           role: "CLUB_ADMIN",
+          clubId: club.id, // Explicitly link Admin to the newly provisioned Club
         }
       });
 

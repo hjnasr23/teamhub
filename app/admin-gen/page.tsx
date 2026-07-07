@@ -1,92 +1,127 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { ShieldCheck, ArrowRight, Building2, UserCircle2, Mail, Lock, Flag } from "lucide-react";
 import { createTenantAction } from "@/lib/actions";
 
 export default function SuperAdminPage() {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
+    setMessage(null);
 
     const formData = new FormData(e.currentTarget);
     const result = await createTenantAction(formData);
 
     if (result.success) {
-      setMessage("Tenant created successfully! ID: " + result.data?.clubId);
+      setMessage({ type: 'success', text: `Tenant provisioned successfully! Club ID: ${result.data?.clubId}` });
       (e.target as HTMLFormElement).reset();
     } else {
-      setMessage("Error: " + result.error);
+      setMessage({ type: 'error', text: result.error || "An unexpected error occurred." });
     }
     
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-        <div className="bg-slate-900 p-6">
-          <h1 className="text-2xl font-bold text-white">Super-Admin Workspace</h1>
-          <p className="text-slate-400 mt-1">Provision a new Club Tenant and Root Administrator</p>
+    <div className="pt-36 pb-16 min-h-screen bg-[#060b13] flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Intro Card */}
+        <div className="col-span-1 md:col-span-5 flex flex-col space-y-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+            <ShieldCheck className="h-7 w-7 text-indigo-400" />
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Super-Admin <br/> <span className="text-indigo-400">Workspace</span></h1>
+          <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+            Use this secure internal gateway to provision brand new Club tenants. This action automatically spins up the database architecture and seeds a Root Administrator assigned directly to the new club instance.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          {message && (
-            <div className={`p-4 rounded-lg text-sm font-medium ${message.startsWith("Error") ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
-              {message}
-            </div>
-          )}
+        {/* Right Form Card */}
+        <div className="col-span-1 md:col-span-7 bg-[#0c1420] rounded-2xl shadow-2xl border border-gray-800/60 p-8 backdrop-blur-sm">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            
+            {message && (
+              <div className={`p-4 rounded-xl text-sm font-semibold flex items-start gap-3 ${message.type === 'error' ? 'bg-rose-950/30 text-rose-400 border border-rose-900/50' : 'bg-emerald-950/30 text-emerald-400 border border-emerald-900/50'}`}>
+                {message.type === 'success' ? <ShieldCheck className="h-5 w-5 shrink-0" /> : <Lock className="h-5 w-5 shrink-0" />}
+                {message.text}
+              </div>
+            )}
 
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-800 border-b pb-2">1. Club Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Club Official Name</label>
-                <input required type="text" name="clubName" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Manchester City" />
+            {/* Club Details Segment */}
+            <div className="space-y-5">
+              <div className="flex items-center gap-2 border-b border-gray-800 pb-3">
+                <Building2 className="h-5 w-5 text-indigo-400" />
+                <h2 className="text-lg font-bold text-white tracking-wide">Club Entity</h2>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">URL Slug</label>
-                <input required type="text" name="clubSlug" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. man-city" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-600 mb-1">City</label>
-                <input required type="text" name="clubCity" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="e.g. Manchester" />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-800 border-b pb-2">2. Root Administrator Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">First Name</label>
-                <input required type="text" name="adminFirstName" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="John" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Last Name</label>
-                <input required type="text" name="adminLastName" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Doe" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Admin Email</label>
-                <input required type="email" name="adminEmail" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="admin@club.com" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Temporary Password</label>
-                <input required type="password" name="adminPassword" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="••••••••" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold tracking-wider text-gray-400 uppercase">Official Name</label>
+                  <input required type="text" name="clubName" className="w-full px-4 py-3 bg-[#111a2e] border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 text-sm transition-colors" placeholder="e.g. Manchester City" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold tracking-wider text-gray-400 uppercase">URL Slug</label>
+                  <input required type="text" name="clubSlug" className="w-full px-4 py-3 bg-[#111a2e] border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 text-sm transition-colors" placeholder="e.g. man-city" />
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-xs font-semibold tracking-wider text-gray-400 uppercase">Operating City</label>
+                  <div className="relative">
+                    <Flag className="absolute left-3 top-3.5 h-4 w-4 text-gray-500" />
+                    <input required type="text" name="clubCity" className="w-full pl-10 pr-4 py-3 bg-[#111a2e] border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 text-sm transition-colors" placeholder="e.g. Manchester, UK" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="pt-4 flex justify-end">
-            <Button type="submit" disabled={loading} className="w-full md:w-auto bg-slate-900 text-white hover:bg-slate-800">
-              {loading ? "Provisioning..." : "Provision New Tenant"}
-            </Button>
-          </div>
-        </form>
+            {/* Root Administrator Segment */}
+            <div className="space-y-5 pt-4">
+              <div className="flex items-center gap-2 border-b border-gray-800 pb-3">
+                <UserCircle2 className="h-5 w-5 text-indigo-400" />
+                <h2 className="text-lg font-bold text-white tracking-wide">Root Administrator</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold tracking-wider text-gray-400 uppercase">First Name</label>
+                  <input required type="text" name="adminFirstName" className="w-full px-4 py-3 bg-[#111a2e] border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 text-sm transition-colors" placeholder="John" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold tracking-wider text-gray-400 uppercase">Last Name</label>
+                  <input required type="text" name="adminLastName" className="w-full px-4 py-3 bg-[#111a2e] border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 text-sm transition-colors" placeholder="Doe" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold tracking-wider text-gray-400 uppercase">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3.5 h-4 w-4 text-gray-500" />
+                    <input required type="email" name="adminEmail" className="w-full pl-10 pr-4 py-3 bg-[#111a2e] border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 text-sm transition-colors" placeholder="admin@club.com" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold tracking-wider text-gray-400 uppercase">Temp Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-500" />
+                    <input required type="password" name="adminPassword" className="w-full pl-10 pr-4 py-3 bg-[#111a2e] border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 text-sm transition-colors" placeholder="••••••••" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full py-4 mt-2 bg-indigo-500 hover:bg-indigo-600 active:scale-[0.99] text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {loading ? "Provisioning Architecture..." : "Provision New Tenant"}
+              {!loading && <ArrowRight className="h-4 w-4" />}
+            </button>
+
+          </form>
+        </div>
       </div>
     </div>
   );

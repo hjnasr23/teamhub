@@ -33,6 +33,9 @@ model User {
   role          Role           @default(FAN)
   createdAt     DateTime       @default(now())
   
+  clubId        String?
+  managedClub   Club?          @relation("AdminToClub", fields: [clubId], references: [id])
+  
   subscriptions Subscription[]
 }
 
@@ -49,6 +52,7 @@ model Club {
   subscribersCount Int            @default(0)
   createdAt        DateTime       @default(now())
 
+  admins        User[]         @relation("AdminToClub")
   posts         Post[]
   subscriptions Subscription[]
 }

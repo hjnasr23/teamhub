@@ -10,6 +10,7 @@ import {
 import CreatePostForm from "./CreatePostForm";
 import ClubSettingsForm from "./ClubSettingsForm";
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/actions";
 
 /* ════════════════════════════════════════════════════════════════════
  *  i18n Dictionary — en / fr / ar
@@ -108,19 +109,34 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
   const t = clubDashboardTranslations[langKey] || clubDashboardTranslations.en;
   const isRTL = langKey === "ar";
 
-  // Mock club for context, since we don't have authenticated sessions yet
-  let club = await prisma.club.findFirst();
+  const session = await getSession();
   
-  if (!club) {
-    club = await prisma.club.create({
-      data: {
-        name: "Demo Club",
-        slug: "demo-club",
-        city: "Demo City",
-        logoInitials: "DC"
-      }
-    });
+  if (!session || session.role !== "CLUB_ADMIN") {
+    return (
+      <div className="pt-36 min-h-screen flex items-center justify-center text-white bg-[#060b13]">
+        Unauthorized. Please sign in as a Club Administrator.
+      </div>
+    );
   }
+
+  // Fetch the logged-in user's assigned club
+  const adminUser = await prisma.user.findUnique({
+    where: { id: session.userId },
+    include: { managedClub: true }
+  });
+
+  if (!adminUser?.managedClub) {
+    return (
+      <div className="pt-36 min-h-screen flex items-center justify-center text-white bg-[#060b13]">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold">No Club Assigned</h1>
+          <p className="text-slate-400">Please contact the Super-Admin to provision a club for your account.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const club = adminUser.managedClub;
 
   // 1. Parallel Prisma Query Execution
   const [activeMembers, allFansCount, recentPosts] = await Promise.all([
@@ -139,7 +155,7 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
   const conversionRate = allFansCount > 0 ? ((activeMembers / allFansCount) * 100).toFixed(1) : "0.0";
 
   return (
-    <div className="pt-32 min-h-screen bg-neutral-bg text-text-dark px-4 md:px-8">
+    <div className="pt-36 pb-16 min-h-screen bg-[#060b13] text-white px-4 md:px-8">
       <div dir={isRTL ? "rtl" : "ltr"} className="mx-auto max-w-5xl space-y-8 pb-12">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8 border-b border-border-custom pb-6">
