@@ -10,8 +10,10 @@ import {
   Flame,
   SearchX,
   Image as ImageIcon,
-  Video
+  Video,
+  Lock
 } from "lucide-react";
+import { getSession } from "@/lib/actions";
 
 /* ════════════════════════════════════════════════════════════════════
  *  i18n Dictionary — en / fr / ar
@@ -129,6 +131,20 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
     include: { posts: { orderBy: { createdAt: 'desc' } } } 
   });
 
+  /* ── Check Fan Subscription State ───────────────────────────────── */
+  const session = await getSession();
+  let hasActiveSubscription = false;
+  if (session && club) {
+    const activeSub = await prisma.subscription.findFirst({
+      where: {
+        fanId: session.userId,
+        clubId: club.id,
+        status: "ACTIVE"
+      }
+    });
+    if (activeSub) hasActiveSubscription = true;
+  }
+
   /* ── 404: Club Not Found state ──────────────────────────────────── */
   if (!club) {
     return (
@@ -162,7 +178,10 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
   const hex = club.primaryColor;
 
   return (
-    <main className="pt-32 min-h-screen bg-neutral-bg text-text-dark px-4 md:px-8 transition-colors duration-200">
+    <main 
+      className="pt-32 min-h-screen bg-neutral-bg text-text-dark px-4 md:px-8 transition-colors duration-200"
+      style={{ '--primary-color': club.primaryColor, '--secondary-color': club.secondaryColor } as React.CSSProperties}
+    >
       <div dir={isRTL ? "rtl" : "ltr"} className="w-full space-y-8 pb-12 max-w-6xl mx-auto">
         <Link 
           href={`/clubs?lang=${lang}`}
@@ -245,7 +264,10 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
               {t.clubhouseFeed}
             </h2>
 
-            {club.posts.map((post) => (
+            {club.posts.map((post) => {
+              const isLocked = post.visibility === 'PREMIUM' && !hasActiveSubscription;
+
+              return (
               <article
                 key={post.id}
                 className="relative overflow-hidden rounded-2xl border border-border-custom bg-neutral-bg shadow-sm transition-shadow duration-300 hover:shadow-md dark:bg-slate-900"
@@ -253,8 +275,17 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
                 <div className="p-5 sm:p-6">
                   {/* Post header row */}
                   <div className="mb-4 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-400">
-                      {t.public}
+                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                        post.visibility === 'PREMIUM'
+                          ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-400"
+                          : "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-400"
+                      }`}
+                    >
+                      {post.visibility === 'PREMIUM' ? (
+                        <><Lock className="h-3 w-3" /> Premium</>
+                      ) : (
+                        t.public
+                      )}
                     </span>
 
                     <span className="flex items-center gap-1 text-[11px] text-text-muted">
@@ -268,26 +299,65 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
                     {post.title}
                   </h3>
 
-                  {/* Post Media (Image/Video) */}
-                  {post.mediaUrl && (
-                    <div className="mt-4 overflow-hidden rounded-xl bg-neutral-bg-alt/50 dark:bg-slate-950/50">
-                      {post.mediaType === 'video' ? (
-                        <video src={post.mediaUrl} controls className="w-full max-h-[400px] object-cover" />
-                      ) : (
-                        <img src={post.mediaUrl} alt={post.title} className="w-full max-h-[400px] object-cover" />
-                      )}
-                    </div>
-                  )}
+                  {/* Post Content */}
+                  {isLocked ? (
+                    <div className="relative mt-4">
+                      {/* Blurred preview text */}
+                      <p className="select-none text-sm leading-relaxed text-text-muted blur-[5px] max-h-24 overflow-hidden">
+                        {post.content}
+                      </p>
 
-                  {/* Post body */}
-                  <div className="mt-4">
-                    <p className="text-sm leading-relaxed text-text-muted">
-                      {post.content}
-                    </p>
-                  </div>
+                      {/* Overlay */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-neutral-bg/60 px-6 text-center backdrop-blur-sm dark:bg-slate-900/60 z-10">
+                        <div
+                          className="flex h-10 w-10 items-center justify-center rounded-full shadow-sm"
+                          style={{ backgroundColor: `var(--primary-color)`, color: '#fff' }}
+                        >
+                          <Lock className="h-4 w-4" />
+                        </div>
+                        <span className="mt-3 text-xs font-extrabold uppercase tracking-wider text-text-dark dark:text-white">
+                          Premium Content
+                        </span>
+                        <p className="mt-1 max-w-xs text-[11px] leading-relaxed text-text-muted">
+                          Subscribe to {club.name} to unlock exclusive posts and media.
+                        </p>
+                        <Link href={`/clubs/${slug}/subscribe?lang=${lang}`} className="mt-4">
+                          <Button
+                            size="sm"
+                            className="gap-1.5 text-xs font-bold text-white shadow-sm"
+                            style={{ backgroundColor: 'var(--primary-color)' }}
+                          >
+                            Subscribe to Unlock
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Post Media (Image/Video) */}
+                      {post.mediaUrl && (
+                        <div className="mt-4 overflow-hidden rounded-xl bg-neutral-bg-alt/50 dark:bg-slate-950/50">
+                          {post.mediaType === 'video' ? (
+                            <video src={post.mediaUrl} controls className="w-full max-h-[400px] object-cover" />
+                          ) : (
+                            <img src={post.mediaUrl} alt={post.title} className="w-full max-h-[400px] object-cover" />
+                          )}
+                        </div>
+                      )}
+
+                      {/* Post body */}
+                      <div className="mt-4">
+                        <p className="text-sm leading-relaxed text-text-muted whitespace-pre-wrap">
+                          {post.content}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </article>
-            ))}
+            );
+          })}
 
             {club.posts.length === 0 && (
               <div className="rounded-2xl border border-dashed border-border-custom p-8 text-center text-text-muted">

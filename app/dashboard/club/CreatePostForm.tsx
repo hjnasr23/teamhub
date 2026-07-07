@@ -14,6 +14,7 @@ export default function CreatePostForm({
 }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PREMIUM">("PUBLIC");
   
   // Media State
   const [file, setFile] = useState<File | null>(null);
@@ -75,7 +76,8 @@ export default function CreatePostForm({
         content,
         clubId,
         mediaUrl,
-        mediaType
+        mediaType,
+        visibility
       });
 
       if (!postRes.success) {
@@ -85,6 +87,7 @@ export default function CreatePostForm({
       // 3. Reset form
       setTitle("");
       setContent("");
+      setVisibility("PUBLIC");
       removeFile();
 
     } catch (err: any) {
@@ -196,6 +199,38 @@ export default function CreatePostForm({
           className="hidden"
           disabled={isSubmitting}
         />
+      </div>
+
+      <div className="space-y-1.5 border-t border-border-custom pt-4">
+        <label className="text-sm font-medium text-text-dark dark:text-slate-300 block mb-2">
+          Post Visibility
+        </label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input 
+              type="radio" 
+              name="visibility" 
+              value="PUBLIC"
+              checked={visibility === "PUBLIC"}
+              onChange={(e) => setVisibility(e.target.value as "PUBLIC" | "PREMIUM")}
+              className="text-emerald-500 focus:ring-emerald-500"
+              disabled={isSubmitting}
+            />
+            <span className="text-sm font-medium text-text-dark dark:text-slate-300">Public</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input 
+              type="radio" 
+              name="visibility" 
+              value="PREMIUM"
+              checked={visibility === "PREMIUM"}
+              onChange={(e) => setVisibility(e.target.value as "PUBLIC" | "PREMIUM")}
+              className="text-amber-500 focus:ring-amber-500"
+              disabled={isSubmitting}
+            />
+            <span className="text-sm font-medium text-amber-700 dark:text-amber-400">Premium Content 🔒</span>
+          </label>
+        </div>
       </div>
 
       <div className="flex justify-end pt-2">

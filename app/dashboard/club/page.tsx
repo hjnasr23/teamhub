@@ -8,6 +8,7 @@ import {
   Clock
 } from "lucide-react";
 import CreatePostForm from "./CreatePostForm";
+import ClubSettingsForm from "./ClubSettingsForm";
 import { prisma } from "@/lib/db";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -138,7 +139,7 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
   const conversionRate = allFansCount > 0 ? ((activeMembers / allFansCount) * 100).toFixed(1) : "0.0";
 
   return (
-    <div className="pt-28 md:pt-32 px-4 md:px-8 w-full bg-neutral-bg min-h-screen text-text-dark transition-colors duration-200">
+    <div className="pt-32 min-h-screen bg-neutral-bg text-text-dark px-4 md:px-8">
       <div dir={isRTL ? "rtl" : "ltr"} className="mx-auto max-w-5xl space-y-8 pb-12">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8 border-b border-border-custom pb-6">
@@ -202,12 +203,28 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
         </div>
       </div>
 
-      {/* 2. Dynamic Content Publisher Engine */}
-      <div className="rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm dark:bg-slate-900">
-        <h2 className="text-lg font-bold text-text-dark dark:text-white">{t.createNewPost}</h2>
-        <p className="mt-1 text-sm text-text-muted">{t.createNewPostDesc}</p>
-        
-        <CreatePostForm t={t} clubId={club.id} />
+      {/* 2. Content Publisher Engine & Settings Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm dark:bg-slate-900">
+          <h2 className="text-lg font-bold text-text-dark dark:text-white">{t.createNewPost}</h2>
+          <p className="mt-1 text-sm text-text-muted">{t.createNewPostDesc}</p>
+          
+          <CreatePostForm t={t} clubId={club.id} />
+        </div>
+
+        <div className="rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm dark:bg-slate-900">
+          <h2 className="text-lg font-bold text-text-dark dark:text-white">Club Settings</h2>
+          <p className="mt-1 mb-6 text-sm text-text-muted">Customize your branding and public profile.</p>
+          
+          <ClubSettingsForm 
+            clubId={club.id}
+            initialDescription={club.description}
+            initialPrimaryColor={club.primaryColor}
+            initialSecondaryColor={club.secondaryColor}
+            initialLogoUrl={club.logoUrl}
+            initialBannerUrl={club.bannerUrl}
+          />
+        </div>
       </div>
 
       {/* 3. Posts Monitoring Log Table */}

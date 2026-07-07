@@ -255,7 +255,7 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-text-muted">
           {t.noAccount}{" "}
-          <Link href="#" className={`font-semibold transition-colors hover:underline ${
+          <Link href={`/signup?lang=${langKey}`} className={`font-semibold transition-colors hover:underline ${
             role === "CLUB_ADMIN"
               ? "text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
               : "text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"

@@ -200,7 +200,7 @@ export async function getFanData(): Promise<
 
     // Query live Subscription table with Club relation join
     const subscriptions = await prisma.subscription.findMany({
-      where: { userId: user.id },
+      where: { fanId: user.id },
       include: { club: true },
       orderBy: { createdAt: "desc" },
     });
@@ -258,3 +258,134 @@ export async function getFanData(): Promise<
     return { success: false, error: message };
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+ *  Super-Admin Workspace — Create a brand new tenant (Club + Admin User)
+ * ════════════════════════════════════════════════════════════════════ */
+
+export async function createTenantAction(formData: FormData): Promise<ActionResponse<{ clubId: string }>> {
+  const clubName = formData.get("clubName") as string;
+  const clubSlug = formData.get("clubSlug") as string;
+  const clubCity = formData.get("clubCity") as string;
+  
+  const adminEmail = formData.get("adminEmail") as string;
+  const adminPassword = formData.get("adminPassword") as string;
+  const adminFirstName = formData.get("adminFirstName") as string;
+  const adminLastName = formData.get("adminLastName") as string;
+
+  if (!clubName || !clubSlug || !clubCity || !adminEmail || !adminPassword) {
+    return { success: false, error: "Missing required fields for tenant creation." };
+  }
+
+  try {
+    const existingClub = await prisma.club.findUnique({ where: { slug: clubSlug } });
+    if (existingClub) {
+      return { success: false, error: "A club with this URL slug already exists." };
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email: adminEmail } });
+    if (existingUser) {
+      return { success: false, error: "A user with this admin email already exists." };
+    }
+
+    // Atomic transaction to generate the new Club and seed its root CLUB_ADMIN user
+    const result = await prisma.$transaction(async (tx) => {
+      const club = await tx.club.create({
+        data: {
+          name: clubName,
+          slug: clubSlug,
+          city: clubCity,
+          logoUrl: "", // Optional, to be customized via Dashboard
+        }
+      });
+
+      const user = await tx.user.create({
+        data: {
+          email: adminEmail,
+          password: adminPassword, // Plaintext for demo, hash in production
+          firstName: adminFirstName,
+          lastName: adminLastName,
+          role: "CLUB_ADMIN",
+        }
+      });
+
+      return { clubId: club.id };
+    });
+
+    return { success: true, data: result };
+  } catch (err: unknown) {
+    return { success: false, error: message };
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ *  Registration — Handles both FAN and CLUB_ADMIN signup
+ * ════════════════════════════════════════════════════════════════════ */
+
+export async function registerAction(formData: FormData): Promise<ActionResponse<{ role: string }>> {
+  const role = formData.get("role") as string;
+  const fullName = formData.get("fullName") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const clubName = formData.get("clubName") as string | null;
+
+  if (!fullName || !email || !password || !role) {
+    return { success: false, error: "Missing required fields." };
+  }
+
+  const [firstName, ...lastNames] = fullName.split(" ");
+  const lastName = lastNames.join(" ") || " ";
+
+  try {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return { success: false, error: "Email already in use." };
+    }
+
+    if (role === "CLUB_ADMIN") {
+      if (!clubName) return { success: false, error: "Club Name is required for Club Admins." };
+      
+      const slug = clubName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || Date.now().toString();
+      const existingClub = await prisma.club.findUnique({ where: { slug } });
+      if (existingClub) {
+        return { success: false, error: "A club with a similar name already exists." };
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.club.create({
+          data: {
+            name: clubName,
+            slug,
+            city: "Unknown",
+            logoUrl: "",
+          }
+        });
+        await tx.user.create({
+          data: {
+            email,
+            password,
+            firstName,
+            lastName,
+            role: "CLUB_ADMIN",
+          }
+        });
+      });
+    } else {
+      await prisma.user.create({
+        data: {
+          email,
+          password,
+          firstName,
+          lastName,
+          role: "FAN",
+        }
+      });
+    }
+
+    return { success: true, data: { role } };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Registration failed.";
+    return { success: false, error: message };
+  }
+}
+
