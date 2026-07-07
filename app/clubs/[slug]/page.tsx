@@ -104,15 +104,138 @@ const CLUBS_DB: Club[] = [
 ];
 
 /* ════════════════════════════════════════════════════════════════════
+ *  i18n Dictionary — en / fr / ar
+ * ════════════════════════════════════════════════════════════════════ */
+
+const clubDetailTranslations: Record<string, {
+  backToDirectory: string;
+  official: string;
+  activeMembers: string;
+  postsPublished: string;
+  subscribe: string;
+  clubhouseFeed: string;
+  premium: string;
+  public: string;
+  premiumContent: string;
+  subscribeTo: string;
+  subscribeToUnlock: string;
+  readFullPost: string;
+  clubhouseOverview: string;
+  activeMembersLabel: string;
+  publicPosts: string;
+  premiumPosts: string;
+  locked: string;
+  fanPolls: string;
+  votingOpen: string;
+  becomeVIP: string;
+  unlockAll: string;
+  viewPlans: string;
+  clubNotFound: string;
+  clubNotFoundDesc1: string;
+  clubNotFoundDesc2: string;
+  backToDiscover: string;
+}> = {
+  en: {
+    backToDirectory: "Back to Directory",
+    official: "Official",
+    activeMembers: "active members",
+    postsPublished: "posts published",
+    subscribe: "Subscribe",
+    clubhouseFeed: "Clubhouse Feed",
+    premium: "Premium",
+    public: "Public",
+    premiumContent: "🔒 Premium Content",
+    subscribeTo: "Subscribe to",
+    subscribeToUnlock: "Subscribe to Unlock",
+    readFullPost: "Read Full Post",
+    clubhouseOverview: "Clubhouse Overview",
+    activeMembersLabel: "Active Members",
+    publicPosts: "Public Posts",
+    premiumPosts: "Premium Posts",
+    locked: "locked",
+    fanPolls: "Fan Polls",
+    votingOpen: "VOTING OPEN",
+    becomeVIP: "Become a VIP Member",
+    unlockAll: "premium posts, live streams, and exclusive matchday content from",
+    viewPlans: "View Membership Plans",
+    clubNotFound: "Club Not Found",
+    clubNotFoundDesc1: "We couldn't find a club matching",
+    clubNotFoundDesc2: ". It may not exist yet or the URL is incorrect.",
+    backToDiscover: "Back to Discover",
+  },
+  fr: {
+    backToDirectory: "Retour au répertoire",
+    official: "Officiel",
+    activeMembers: "membres actifs",
+    postsPublished: "publications",
+    subscribe: "S'abonner",
+    clubhouseFeed: "Fil du Clubhouse",
+    premium: "Premium",
+    public: "Public",
+    premiumContent: "🔒 Contenu Premium",
+    subscribeTo: "Abonnez-vous à",
+    subscribeToUnlock: "S'abonner pour débloquer",
+    readFullPost: "Lire l'article complet",
+    clubhouseOverview: "Aperçu du Clubhouse",
+    activeMembersLabel: "Membres Actifs",
+    publicPosts: "Publications Publiques",
+    premiumPosts: "Publications Premium",
+    locked: "verrouillées",
+    fanPolls: "Sondages Fans",
+    votingOpen: "VOTE OUVERT",
+    becomeVIP: "Devenez Membre VIP",
+    unlockAll: "publications premium, streams en direct et contenu exclusif de",
+    viewPlans: "Voir les Plans d'Adhésion",
+    clubNotFound: "Club introuvable",
+    clubNotFoundDesc1: "Nous n'avons pas trouvé de club correspondant à",
+    clubNotFoundDesc2: ". Il n'existe peut-être pas encore ou l'URL est incorrecte.",
+    backToDiscover: "Retour à la découverte",
+  },
+  ar: {
+    backToDirectory: "العودة إلى الدليل",
+    official: "رسمي",
+    activeMembers: "أعضاء نشطين",
+    postsPublished: "منشورات",
+    subscribe: "اشترك",
+    clubhouseFeed: "تغذية النادي",
+    premium: "مميز",
+    public: "عام",
+    premiumContent: "🔒 محتوى مميز",
+    subscribeTo: "اشترك في",
+    subscribeToUnlock: "اشترك لفتح المحتوى",
+    readFullPost: "قراءة المنشور كاملاً",
+    clubhouseOverview: "نظرة عامة على النادي",
+    activeMembersLabel: "الأعضاء النشطين",
+    publicPosts: "المنشورات العامة",
+    premiumPosts: "المنشورات المميزة",
+    locked: "مقفلة",
+    fanPolls: "استطلاعات المشجعين",
+    votingOpen: "التصويت مفتوح",
+    becomeVIP: "كن عضواً مميزاً",
+    unlockAll: "منشورات مميزة وبث مباشر ومحتوى حصري من",
+    viewPlans: "عرض خطط العضوية",
+    clubNotFound: "النادي غير موجود",
+    clubNotFoundDesc1: "لم نتمكن من العثور على نادي يطابق",
+    clubNotFoundDesc2: ". قد لا يكون موجوداً بعد أو أن الرابط غير صحيح.",
+    backToDiscover: "العودة إلى الاكتشاف",
+  },
+};
+
+/* ════════════════════════════════════════════════════════════════════
  *  PAGE COMPONENT
  * ════════════════════════════════════════════════════════════════════ */
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }
 
-export default async function ClubPage({ params }: PageProps) {
+export default async function ClubPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const lang = resolvedSearchParams.lang || "en";
+  const t = clubDetailTranslations[lang] || clubDetailTranslations.en;
+  const isRTL = lang === "ar";
 
   /* ── Look up the club from our mock database ────────────────────── */
   const club = CLUBS_DB.find((c) => c.slug === slug);
@@ -120,24 +243,24 @@ export default async function ClubPage({ params }: PageProps) {
   /* ── 404: Club Not Found state ──────────────────────────────────── */
   if (!club) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+      <div dir={isRTL ? "rtl" : "ltr"} className="flex min-h-[60vh] flex-col items-center justify-center text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-custom bg-neutral-bg shadow-sm">
           <SearchX className="h-7 w-7 text-text-muted" />
         </div>
         <h1 className="mt-6 font-display text-2xl font-bold text-text-dark">
-          Club Not Found
+          {t.clubNotFound}
         </h1>
         <p className="mt-2 max-w-sm text-sm text-text-muted">
-          We couldn&apos;t find a club matching{" "}
+          {t.clubNotFoundDesc1}{" "}
           <code className="rounded-md border border-border-custom bg-neutral-bg-alt px-1.5 py-0.5 text-xs font-semibold text-text-dark">
             {slug}
           </code>
-          . It may not exist yet or the URL is incorrect.
+          {t.clubNotFoundDesc2}
         </p>
-        <Link href="/" className="mt-6">
+        <Link href={`/clubs?lang=${lang}`} className="mt-6">
           <Button variant="outline" size="sm" className="gap-2">
             <ArrowRight className="h-3.5 w-3.5 rotate-180" />
-            Back to Discover
+            {t.backToDiscover}
           </Button>
         </Link>
       </div>
@@ -150,13 +273,13 @@ export default async function ClubPage({ params }: PageProps) {
   const premiumPosts = club.posts.filter((p) => p.isPremium);
 
   return (
-    <div className="w-full space-y-8">
+    <div dir={isRTL ? "rtl" : "ltr"} className="w-full space-y-8">
       <Link 
-        href="/clubs" 
+        href={`/clubs?lang=${lang}`}
         className="mb-4 flex items-center gap-2 text-sm text-text-muted transition-all hover:text-text-dark"
       >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Directory
+        <ArrowLeft className={`h-4 w-4 ${isRTL ? 'rotate-180' : ''}`} />
+        {t.backToDirectory}
       </Link>
 
       {/* ═══════════════════════════════════════════════════════════ */}
@@ -190,7 +313,7 @@ export default async function ClubPage({ params }: PageProps) {
                   style={{ backgroundColor: hex }}
                 >
                   <Flame className="h-3 w-3" />
-                  Official
+                  {t.official}
                 </span>
               </div>
 
@@ -198,23 +321,23 @@ export default async function ClubPage({ params }: PageProps) {
                 <span className="flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
                   <strong className="text-text-dark dark:text-white">{club.subscribersCount}</strong>{" "}
-                  active members
+                  {t.activeMembers}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <FileText className="h-3.5 w-3.5" />
                   <strong className="text-text-dark dark:text-white">{club.posts.length}</strong>{" "}
-                  posts published
+                  {t.postsPublished}
                 </span>
               </div>
             </div>
 
             {/* CTA button */}
-            <Link href={`/clubs/${slug}/subscribe`} className="w-full shrink-0 sm:w-auto">
+            <Link href={`/clubs/${slug}/subscribe?lang=${lang}`} className="w-full shrink-0 sm:w-auto">
               <Button
                 className="group w-full gap-2 text-sm font-bold text-white shadow-md sm:w-auto"
                 style={{ backgroundColor: hex }}
               >
-                Subscribe
+                {t.subscribe}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
@@ -229,7 +352,7 @@ export default async function ClubPage({ params }: PageProps) {
         {/* Main feed column */}
         <div className="space-y-5 lg:col-span-2">
           <h2 className="font-display text-lg font-bold text-text-dark dark:text-white">
-            Clubhouse Feed
+            {t.clubhouseFeed}
           </h2>
 
           {club.posts.map((post) => (
@@ -250,10 +373,10 @@ export default async function ClubPage({ params }: PageProps) {
                     {post.isPremium ? (
                       <>
                         <Lock className="h-3 w-3" />
-                        Premium
+                        {t.premium}
                       </>
                     ) : (
-                      "Public"
+                      t.public
                     )}
                   </span>
 
@@ -286,19 +409,19 @@ export default async function ClubPage({ params }: PageProps) {
                         <LockKeyhole className="h-4 w-4" style={{ color: hex }} />
                       </div>
                       <span className="mt-3 text-xs font-extrabold uppercase tracking-wider text-text-dark dark:text-white">
-                        🔒 Premium Content
+                        {t.premiumContent}
                       </span>
                       <p className="mt-1 max-w-xs text-[11px] leading-relaxed text-text-muted">
-                        Subscribe to {club.name} to unlock exclusive posts,
+                        {t.subscribeTo} {club.name} to unlock exclusive posts,
                         videos, and tactical breakdowns.
                       </p>
-                      <Link href={`/clubs/${slug}/subscribe`} className="mt-4">
+                      <Link href={`/clubs/${slug}/subscribe?lang=${lang}`} className="mt-4">
                         <Button
                           size="sm"
                           className="gap-1.5 text-xs font-bold text-white shadow-sm"
                           style={{ backgroundColor: hex }}
                         >
-                          Subscribe to Unlock
+                          {t.subscribeToUnlock}
                           <ArrowRight className="h-3.5 w-3.5" />
                         </Button>
                       </Link>
@@ -311,7 +434,7 @@ export default async function ClubPage({ params }: PageProps) {
                       {post.content}
                     </p>
                     <div className="mt-4 border-t border-border-custom pt-3">
-                      <Link href={`/clubs/${slug}/posts/${post.id}`}>
+                      <Link href={`/clubs/${slug}/posts/${post.id}?lang=${lang}`}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -319,7 +442,7 @@ export default async function ClubPage({ params }: PageProps) {
                           style={{ color: hex }}
                         >
                           <FileText className="h-3.5 w-3.5" />
-                          Read Full Post
+                          {t.readFullPost}
                         </Button>
                       </Link>
                     </div>
@@ -334,35 +457,35 @@ export default async function ClubPage({ params }: PageProps) {
         <aside className="space-y-6">
           <div className="rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm dark:bg-slate-900">
             <h3 className="mb-5 font-display text-xs font-bold uppercase tracking-wider text-text-dark dark:text-white">
-              Clubhouse Overview
+              {t.clubhouseOverview}
             </h3>
             <dl className="space-y-4 text-xs">
               <div className="flex items-center justify-between border-b border-border-custom pb-3">
-                <dt className="text-text-muted">Active Members</dt>
+                <dt className="text-text-muted">{t.activeMembersLabel}</dt>
                 <dd className="font-bold text-text-dark dark:text-white">
                   {club.subscribersCount}
                 </dd>
               </div>
               <div className="flex items-center justify-between border-b border-border-custom pb-3">
-                <dt className="text-text-muted">Public Posts</dt>
+                <dt className="text-text-muted">{t.publicPosts}</dt>
                 <dd className="font-bold text-text-dark dark:text-white">
                   {publicPosts.length}
                 </dd>
               </div>
               <div className="flex items-center justify-between border-b border-border-custom pb-3">
-                <dt className="text-text-muted">Premium Posts</dt>
+                <dt className="text-text-muted">{t.premiumPosts}</dt>
                 <dd className="font-bold" style={{ color: hex }}>
-                  {premiumPosts.length} locked
+                  {premiumPosts.length} {t.locked}
                 </dd>
               </div>
               <div className="flex items-center justify-between">
-                <dt className="text-text-muted">Fan Polls</dt>
+                <dt className="text-text-muted">{t.fanPolls}</dt>
                 <dd>
                   <span
                     className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold text-white"
                     style={{ backgroundColor: hex }}
                   >
-                    VOTING OPEN
+                    {t.votingOpen}
                   </span>
                 </dd>
               </div>
@@ -378,18 +501,17 @@ export default async function ClubPage({ params }: PageProps) {
             }}
           >
             <h4 className="font-display text-sm font-bold text-text-dark dark:text-white">
-              Become a VIP Member
+              {t.becomeVIP}
             </h4>
             <p className="mt-1.5 text-xs leading-relaxed text-text-muted">
-              Unlock all {premiumPosts.length} premium posts, live streams,
-              and exclusive matchday content from {club.name}.
+              Unlock all {premiumPosts.length} {t.unlockAll} {club.name}.
             </p>
-            <Link href={`/clubs/${slug}/subscribe`} className="mt-4 block">
+            <Link href={`/clubs/${slug}/subscribe?lang=${lang}`} className="mt-4 block">
               <Button
                 className="w-full gap-2 text-xs font-bold text-white shadow-md"
                 style={{ backgroundColor: hex }}
               >
-                View Membership Plans
+                {t.viewPlans}
                 <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>

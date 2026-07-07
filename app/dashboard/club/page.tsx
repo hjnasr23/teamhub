@@ -1,36 +1,151 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import { 
   TrendingUp, 
   Users, 
   Activity,
-  Send,
   Lock,
   Globe,
   Clock
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import CreatePostForm from "./CreatePostForm";
+import { prisma } from "@/lib/db";
 
-// MOCK DATA for posts
-const RECENT_POSTS = [
-  { id: 1, title: "Matchday updates against FAR Rabat", date: "Jul 10, 2026", visibility: "Public", interactions: "1.2K" },
-  { id: 2, title: "Exclusive Tactical Breakdown: 3-5-2 Formation", date: "Jul 8, 2026", visibility: "Premium", interactions: "450" },
-  { id: 3, title: "New Training Kits Revealed", date: "Jul 5, 2026", visibility: "Public", interactions: "3.4K" },
-];
+/* ════════════════════════════════════════════════════════════════════
+ *  i18n Dictionary — en / fr / ar
+ * ════════════════════════════════════════════════════════════════════ */
 
-export default function ClubAdminDashboard() {
-  const [visibility, setVisibility] = useState<"Public" | "Premium">("Public");
+const clubDashboardTranslations = {
+  en: {
+    clubOverview: "Club Overview",
+    clubOverviewDesc: "Manage your club's analytics, content, and supporters.",
+    totalRevenue: "Total Revenue",
+    thisMonth: "this month",
+    activeMembers: "Active Members",
+    supporters: "Supporters",
+    conversionRate: "Conversion Rate",
+    createNewPost: "Create New Post",
+    createNewPostDesc: "Draft announcements or premium updates to your supporters.",
+    postTitle: "Post Title",
+    postTitlePlaceholder: "Matchday updates...",
+    content: "Content",
+    contentPlaceholder: "Write your update here...",
+    visibility: "Visibility",
+    public: "Public",
+    publicDesc: "Free for everyone",
+    premiumOnly: "Premium Only",
+    premiumDesc: "Locked behind the 50 MAD/month tier",
+    publishPost: "Publish Post",
+    recentPosts: "Recent Posts",
+    tablePostTitle: "Post Title",
+    tableDate: "Date",
+    tableVisibility: "Visibility",
+    tableInteractions: "Interactions",
+    revenueAmount: "MAD",
+    currencyFirst: false
+  },
+  fr: {
+    clubOverview: "Aperçu du Club",
+    clubOverviewDesc: "Gérez les analyses, le contenu et les supporters de votre club.",
+    totalRevenue: "Revenu Total",
+    thisMonth: "ce mois-ci",
+    activeMembers: "Membres Actifs",
+    supporters: "Supporters",
+    conversionRate: "Taux de Conversion",
+    createNewPost: "Créer une Nouvelle Publication",
+    createNewPostDesc: "Rédigez des annonces ou des mises à jour premium pour vos supporters.",
+    postTitle: "Titre de la Publication",
+    postTitlePlaceholder: "Mises à jour du jour de match...",
+    content: "Contenu",
+    contentPlaceholder: "Écrivez votre mise à jour ici...",
+    visibility: "Visibilité",
+    public: "Public",
+    publicDesc: "Gratuit pour tous",
+    premiumOnly: "Premium Uniquement",
+    premiumDesc: "Verrouillé par le niveau à 50 MAD/mois",
+    publishPost: "Publier",
+    recentPosts: "Publications Récentes",
+    tablePostTitle: "Titre",
+    tableDate: "Date",
+    tableVisibility: "Visibilité",
+    tableInteractions: "Interactions",
+    revenueAmount: "MAD",
+    currencyFirst: false
+  },
+  ar: {
+    clubOverview: "نظرة عامة على النادي",
+    clubOverviewDesc: "إدارة تحليلات النادي والمحتوى والمشجعين.",
+    totalRevenue: "إجمالي الإيرادات",
+    thisMonth: "هذا الشهر",
+    activeMembers: "الأعضاء النشطين",
+    supporters: "المشجعين",
+    conversionRate: "معدل التحويل",
+    createNewPost: "إنشاء منشور جديد",
+    createNewPostDesc: "صياغة إعلانات أو تحديثات مميزة لمشجعيك.",
+    postTitle: "عنوان المنشور",
+    postTitlePlaceholder: "تحديثات يوم المباراة...",
+    content: "المحتوى",
+    contentPlaceholder: "اكتب تحديثك هنا...",
+    visibility: "الرؤية",
+    public: "عام",
+    publicDesc: "مجاني للجميع",
+    premiumOnly: "مميز فقط",
+    premiumDesc: "مقفل خلف فئة 50 درهم/شهر",
+    publishPost: "نشر المنشور",
+    recentPosts: "المنشورات الحديثة",
+    tablePostTitle: "عنوان المنشور",
+    tableDate: "التاريخ",
+    tableVisibility: "الرؤية",
+    tableInteractions: "التفاعلات",
+    revenueAmount: "درهم",
+    currencyFirst: true
+  }
+} as const;
+
+export default async function ClubAdminDashboard({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const params = await searchParams;
+  const langKey = (params.lang || "en") as "en" | "fr" | "ar";
+  const t = clubDashboardTranslations[langKey] || clubDashboardTranslations.en;
+  const isRTL = langKey === "ar";
+
+  // Mock club for context, since we don't have authenticated sessions yet
+  let club = await prisma.club.findFirst();
+  
+  if (!club) {
+    club = await prisma.club.create({
+      data: {
+        name: "Demo Club",
+        slug: "demo-club",
+        city: "Demo City",
+        logoInitials: "DC"
+      }
+    });
+  }
+
+  // 1. Parallel Prisma Query Execution
+  const [activeMembers, allFansCount, recentPosts] = await Promise.all([
+    prisma.subscription.count({ where: { clubId: club.id, status: 'ACTIVE' } }),
+    prisma.user.count({ where: { role: 'FAN' } }),
+    prisma.post.findMany({ 
+      where: { clubId: club.id }, 
+      select: { id: true, title: true, createdAt: true, mediaUrl: true, mediaType: true },
+      orderBy: { createdAt: 'desc' }, 
+      take: 5 
+    })
+  ]);
+
+  // Statistics Calculation
+  const totalRevenue = activeMembers * 50;
+  const conversionRate = allFansCount > 0 ? ((activeMembers / allFansCount) * 100).toFixed(1) : "0.0";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
+    <div dir={isRTL ? "rtl" : "ltr"} className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-text-dark dark:text-white">
-          Club Overview
+          {t.clubOverview}
         </h1>
         <p className="mt-1 text-sm text-text-muted">
-          Manage your club&apos;s analytics, content, and supporters.
+          {t.clubOverviewDesc}
         </p>
       </div>
 
@@ -39,176 +154,98 @@ export default function ClubAdminDashboard() {
         {/* Total Revenue */}
         <div className="flex flex-col rounded-xl border border-border-custom bg-neutral-bg p-5 shadow-sm transition-all hover:shadow-md dark:bg-slate-900">
           <div className="flex items-center justify-between text-text-muted">
-            <span className="text-sm font-medium">Total Revenue</span>
+            <span className="text-sm font-medium">{t.totalRevenue}</span>
             <Activity className="h-4 w-4" />
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-text-dark dark:text-white">45,200 MAD</span>
+            <span className="text-2xl font-bold text-text-dark dark:text-white">
+              {t.currencyFirst ? `${t.revenueAmount} ${totalRevenue.toLocaleString()}` : `${totalRevenue.toLocaleString()} ${t.revenueAmount}`}
+            </span>
           </div>
           <div className="mt-1 flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
             <TrendingUp className="h-3 w-3" />
-            +12% this month
+            +12% {t.thisMonth}
           </div>
         </div>
 
         {/* Active Members */}
         <div className="flex flex-col rounded-xl border border-border-custom bg-neutral-bg p-5 shadow-sm transition-all hover:shadow-md dark:bg-slate-900">
           <div className="flex items-center justify-between text-text-muted">
-            <span className="text-sm font-medium">Active Members</span>
+            <span className="text-sm font-medium">{t.activeMembers}</span>
             <Users className="h-4 w-4" />
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-text-dark dark:text-white">904</span>
-            <span className="text-sm text-text-muted">Supporters</span>
+            <span className="text-2xl font-bold text-text-dark dark:text-white">{activeMembers.toLocaleString()}</span>
+            <span className="text-sm text-text-muted">{t.supporters}</span>
           </div>
         </div>
 
         {/* Conversion Rate */}
         <div className="flex flex-col rounded-xl border border-border-custom bg-neutral-bg p-5 shadow-sm transition-all hover:shadow-md dark:bg-slate-900">
           <div className="flex items-center justify-between text-text-muted">
-            <span className="text-sm font-medium">Conversion Rate</span>
+            <span className="text-sm font-medium">{t.conversionRate}</span>
             <Activity className="h-4 w-4" />
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-text-dark dark:text-white">4.8%</span>
+            <span className="text-2xl font-bold text-text-dark dark:text-white">{conversionRate}%</span>
           </div>
         </div>
       </div>
 
       {/* 2. Dynamic Content Publisher Engine */}
       <div className="rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm dark:bg-slate-900">
-        <h2 className="text-lg font-bold text-text-dark dark:text-white">Create New Post</h2>
-        <p className="mt-1 text-sm text-text-muted">Draft announcements or premium updates to your supporters.</p>
+        <h2 className="text-lg font-bold text-text-dark dark:text-white">{t.createNewPost}</h2>
+        <p className="mt-1 text-sm text-text-muted">{t.createNewPostDesc}</p>
         
-        <form className="mt-6 space-y-5" onSubmit={(e) => e.preventDefault()}>
-          <div className="space-y-1.5">
-            <label htmlFor="title" className="text-sm font-medium text-text-dark dark:text-slate-300">
-              Post Title
-            </label>
-            <input 
-              id="title"
-              type="text" 
-              placeholder="Matchday updates..." 
-              className="w-full rounded-lg border border-border-custom bg-neutral-bg-alt px-4 py-2.5 text-sm text-text-dark placeholder-text-muted transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-slate-950 dark:text-white"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="content" className="text-sm font-medium text-text-dark dark:text-slate-300">
-              Content
-            </label>
-            <textarea 
-              id="content"
-              rows={4}
-              placeholder="Write your update here..." 
-              className="w-full resize-none rounded-lg border border-border-custom bg-neutral-bg-alt px-4 py-3 text-sm text-text-dark placeholder-text-muted transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-slate-950 dark:text-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-text-dark dark:text-slate-300">Visibility</label>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label 
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                  visibility === "Public" 
-                    ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500 dark:bg-emerald-950/20" 
-                    : "border-border-custom bg-neutral-bg-alt hover:bg-neutral-bg-hover dark:bg-slate-950"
-                }`}
-                onClick={() => setVisibility("Public")}
-              >
-                <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${visibility === "Public" ? "border-emerald-500" : "border-text-muted"}`}>
-                  {visibility === "Public" && <div className="h-2 w-2 rounded-full bg-emerald-500" />}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 text-sm font-semibold text-text-dark dark:text-white">
-                    <Globe className="h-4 w-4 text-emerald-500" />
-                    Public
-                  </div>
-                  <div className="mt-1 text-xs text-text-muted">Free for everyone</div>
-                </div>
-              </label>
-              
-              <label 
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                  visibility === "Premium" 
-                    ? "border-amber-500 bg-amber-50 ring-1 ring-amber-500 dark:bg-amber-950/20" 
-                    : "border-border-custom bg-neutral-bg-alt hover:bg-neutral-bg-hover dark:bg-slate-950"
-                }`}
-                onClick={() => setVisibility("Premium")}
-              >
-                <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${visibility === "Premium" ? "border-amber-500" : "border-text-muted"}`}>
-                  {visibility === "Premium" && <div className="h-2 w-2 rounded-full bg-amber-500" />}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 text-sm font-semibold text-text-dark dark:text-white">
-                    <Lock className="h-4 w-4 text-amber-500" />
-                    Premium Only
-                  </div>
-                  <div className="mt-1 text-xs text-text-muted">Locked behind the 50 MAD/month tier</div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <Button className="gap-2 bg-emerald-500 text-white shadow-sm transition-colors hover:bg-emerald-600">
-              <Send className="h-4 w-4" />
-              Publish Post
-            </Button>
-          </div>
-        </form>
+        <CreatePostForm t={t} clubId={club.id} />
       </div>
 
       {/* 3. Posts Monitoring Log Table */}
       <div className="overflow-hidden rounded-2xl border border-border-custom bg-neutral-bg shadow-sm dark:bg-slate-900">
         <div className="border-b border-border-custom px-6 py-5">
-          <h2 className="text-base font-bold text-text-dark dark:text-white">Recent Posts</h2>
+          <h2 className="text-base font-bold text-text-dark dark:text-white">{t.recentPosts}</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-text-muted">
-            <thead className="bg-neutral-bg-alt text-xs uppercase text-text-muted dark:bg-slate-950/50">
-              <tr>
-                <th className="px-6 py-4 font-semibold">Post Title</th>
-                <th className="px-6 py-4 font-semibold">Date</th>
-                <th className="px-6 py-4 font-semibold">Visibility</th>
-                <th className="px-6 py-4 text-right font-semibold">Interactions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-custom">
-              {RECENT_POSTS.map((post) => (
-                <tr key={post.id} className="transition-colors hover:bg-neutral-bg-alt/50 dark:hover:bg-slate-800/50">
-                  <td className="px-6 py-4 font-medium text-text-dark dark:text-slate-200">
-                    {post.title}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5" />
-                      {post.date}
-                    </div>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        post.visibility === "Public"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                          : "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
-                      }`}
-                    >
-                      {post.visibility === "Public" ? (
-                        <Globe className="h-3 w-3" />
-                      ) : (
-                        <Lock className="h-3 w-3" />
-                      )}
-                      {post.visibility}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right font-medium text-text-dark dark:text-slate-300">
-                    {post.interactions}
-                  </td>
+          {recentPosts.length === 0 ? (
+            <p className="text-sm text-text-muted p-6 text-center">No posts found</p>
+          ) : (
+            <table className="w-full text-left text-sm text-text-muted">
+              <thead className="bg-neutral-bg-alt text-xs uppercase text-text-muted dark:bg-slate-950/50">
+                <tr>
+                  <th className={`px-6 py-4 font-semibold ${isRTL ? "text-right" : "text-left"}`}>{t.tablePostTitle}</th>
+                  <th className={`px-6 py-4 font-semibold ${isRTL ? "text-right" : "text-left"}`}>{t.tableDate}</th>
+                  <th className={`px-6 py-4 font-semibold ${isRTL ? "text-right" : "text-left"}`}>{t.tableVisibility}</th>
+                  <th className={`px-6 py-4 font-semibold ${isRTL ? "text-left" : "text-right"}`}>{t.tableInteractions}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border-custom">
+                {recentPosts.map((post) => (
+                  <tr key={post.id} className="transition-colors hover:bg-neutral-bg-alt/50 dark:hover:bg-slate-800/50">
+                    <td className="px-6 py-4 font-medium text-text-dark dark:text-slate-200">
+                      {post.title}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
+                        {new Date(post.createdAt).toLocaleDateString(langKey)}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+                      >
+                        <Globe className="h-3 w-3" />
+                        {t.public}
+                      </span>
+                    </td>
+                    <td className={`px-6 py-4 font-medium text-text-dark dark:text-slate-300 ${isRTL ? "text-left" : "text-right"}`}>
+                      0
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

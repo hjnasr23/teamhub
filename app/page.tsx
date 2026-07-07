@@ -31,6 +31,8 @@ const dictionary: Record<string, {
   teamsSubtitle: string;
   teamsEmpty: string;
   teamsJoin: string;
+  teamsHubLabel: string;
+  fansSuffix: string;
   stepsTitle: string;
   stepsSubtitle: string;
   step1Title: string;
@@ -76,6 +78,8 @@ const dictionary: Record<string, {
     teamsSubtitle: "Find your colors and join the digital revolution.",
     teamsEmpty: "No active clubs registered yet",
     teamsJoin: "Join Club",
+    teamsHubLabel: "Official digital hub",
+    fansSuffix: "fans",
     stepsTitle: "Your VIP Experience",
     stepsSubtitle: "Three simple steps to unlock the inner sanctum of your club.",
     step1Title: "Discover Your Tribe",
@@ -128,6 +132,8 @@ const dictionary: Record<string, {
     teamsSubtitle: "Trouvez vos couleurs et rejoignez la révolution digitale.",
     teamsEmpty: "Aucun club actif enregistré pour le moment",
     teamsJoin: "Rejoindre le Club",
+    teamsHubLabel: "Hub numérique officiel",
+    fansSuffix: "fans",
     stepsTitle: "Votre Expérience VIP",
     stepsSubtitle: "Trois étapes simples pour accéder au cercle privé de votre club.",
     step1Title: "Découvrez Votre Tribu",
@@ -180,6 +186,8 @@ const dictionary: Record<string, {
     teamsSubtitle: "اعثر على ألوانك وانضم إلى الثورة الرقمية.",
     teamsEmpty: "لا توجد أندية نشطة مسجلة بعد",
     teamsJoin: "انضم للنادي",
+    teamsHubLabel: "المركز الرقمي الرسمي",
+    fansSuffix: "مشجع",
     stepsTitle: "تجربتك الحصرية",
     stepsSubtitle: "ثلاث خطوات بسيطة لفتح الدائرة الداخلية لناديك.",
     step1Title: "اكتشف قبيلتك",
@@ -322,7 +330,7 @@ export default async function MarketingPage({
 
             {/* Single CTA Button */}
             <div className="mt-10 flex justify-center">
-              <Link href="/clubs">
+              <Link href={`/clubs?lang=${lang}`}>
                 <Button
                   size="lg"
                   className="group gap-2.5 bg-emerald-600 font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 hover:shadow-xl hover:shadow-emerald-600/25 px-8"
@@ -398,7 +406,7 @@ export default async function MarketingPage({
                 {clubs.map((club) => (
                   <Link
                     key={club.id}
-                    href={`/clubs/${club.slug}`}
+                    href={`/clubs/${club.slug}?lang=${lang}`}
                     className="flex w-[280px] md:w-[320px] shrink-0 snap-start flex-col justify-between rounded-2xl border border-border-custom bg-neutral-bg p-6 shadow-sm transition-all duration-300 hover:border-emerald-500 hover:shadow-md hover:-translate-y-1"
                   >
                     <div>
@@ -418,14 +426,14 @@ export default async function MarketingPage({
                             className="inline-block h-1.5 w-1.5 rounded-full"
                             style={{ backgroundColor: club.primaryColor }}
                           />
-                          {new Intl.NumberFormat("en-US", { notation: "compact" }).format(club.subscribersCount)} fans
+                          {new Intl.NumberFormat("en-US", { notation: "compact" }).format(club.subscribersCount)} {t.fansSuffix}
                         </div>
                       </div>
                       <h3 className="font-display text-base font-bold text-text-dark truncate">
                         {club.name}
                       </h3>
                       <p className="mt-1.5 text-xs text-text-muted whitespace-normal line-clamp-2">
-                        {club.city} • Official digital hub
+                        {club.city} • {t.teamsHubLabel}
                       </p>
                     </div>
                     <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
@@ -525,7 +533,7 @@ export default async function MarketingPage({
                     </li>
                   ))}
                 </ul>
-                <Link href="/clubs" className="mt-10 block">
+                <Link href={`/clubs?lang=${lang}`} className="mt-10 block">
                   <Button variant="outline" size="lg" className="w-full gap-2 font-semibold">
                     {t.monthlyCta}
                   </Button>
@@ -571,7 +579,7 @@ export default async function MarketingPage({
                     </li>
                   ))}
                 </ul>
-                <Link href="/clubs" className="mt-10 block">
+                <Link href={`/clubs?lang=${lang}`} className="mt-10 block">
                   <Button size="lg" className="group w-full gap-2 bg-emerald-600 font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 hover:shadow-xl hover:shadow-emerald-600/25">
                     {t.annualCta}
                     <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

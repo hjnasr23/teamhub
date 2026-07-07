@@ -38,11 +38,11 @@ model Post {
   id          String   @id @default(uuid())
   title       String
   content     String
-  isPremium   Boolean  @default(false)
+  mediaUrl    String?  
+  mediaType   String? 
   createdAt   DateTime @default(now())
-  
   clubId      String
-  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  club        Club     @relation(fields: [clubId], references: [id])
 }
 
 model Subscription {
