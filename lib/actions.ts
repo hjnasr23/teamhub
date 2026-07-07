@@ -44,10 +44,10 @@ export async function loginAction(
 ): Promise<ActionResponse<{ role: string }>> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const selectedRole = formData.get("role") as string;
+  const selectedRole = formData.get("role") as string | null;
 
-  if (!email || !password || !selectedRole) {
-    return { success: false, error: "All fields are required." };
+  if (!email || !password) {
+    return { success: false, error: "Email and password are required." };
   }
 
   try {
@@ -62,8 +62,8 @@ export async function loginAction(
       return { success: false, error: "Incorrect password. Please try again." };
     }
 
-    // Role verification
-    if (user.role !== selectedRole) {
+    // Role verification (only if selectedRole is passed)
+    if (selectedRole && user.role !== selectedRole) {
       return {
         success: false,
         error: `This account is registered as a ${user.role === "CLUB_ADMIN" ? "Club Admin" : "Supporter"}, not a ${selectedRole === "CLUB_ADMIN" ? "Club Admin" : "Supporter"}.`,
@@ -246,6 +246,11 @@ export async function getFanData(): Promise<
  * ════════════════════════════════════════════════════════════════════ */
 
 export async function createTenantAction(formData: FormData): Promise<ActionResponse<{ clubId: string }>> {
+  const session = await getSession();
+  if (!session || session.role !== "SUPER_ADMIN") {
+    return { success: false, error: "403 Forbidden — Super-Admin authorization required." };
+  }
+
   const clubName = formData.get("clubName") as string;
   const clubSlug = formData.get("clubSlug") as string;
   const clubCity = formData.get("clubCity") as string;
@@ -281,7 +286,7 @@ export async function createTenantAction(formData: FormData): Promise<ActionResp
         }
       });
 
-      const user = await tx.user.create({
+      await tx.user.create({
         data: {
           email: adminEmail,
           password: adminPassword, // Plaintext for demo, hash in production
@@ -297,7 +302,8 @@ export async function createTenantAction(formData: FormData): Promise<ActionResp
 
     return { success: true, data: result };
   } catch (err: unknown) {
-    return { success: false, error: message };
+    const errorMsg = err instanceof Error ? err.message : "Failed to create tenant.";
+    return { success: false, error: errorMsg };
   }
 }
 

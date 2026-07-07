@@ -17,7 +17,6 @@ async function main() {
             name: 'Raja Club Athletic',
             slug: 'raja-ca',
             city: 'Casablanca',
-            logoInitials: 'RCA',
             primaryColor: '#16A34A',
             subscribersCount: 14290,
         },
@@ -28,7 +27,6 @@ async function main() {
             name: 'Wydad Athletic Club',
             slug: 'wydad-ac',
             city: 'Casablanca',
-            logoInitials: 'WAC',
             primaryColor: '#DC2626',
             subscribersCount: 9850,
         },
@@ -57,6 +55,16 @@ async function main() {
         },
     })
 
+    const superAdminUser = await prisma.user.create({
+        data: {
+            email: 'superadmin@teamhub.ma',
+            password: 'SuperAdmin2026!',
+            firstName: 'Super',
+            lastName: 'Admin',
+            role: 'SUPER_ADMIN',
+        },
+    })
+
     console.log('✅ Auth test profiles credentials created.')
 
     // 4. Link some sample dynamic posts
@@ -65,19 +73,19 @@ async function main() {
             {
                 title: 'Matchday updates against FAR Rabat',
                 content: 'Welcome back supporters! Here is our tactical approach blueprint layout updates for the weekend classic match line-ups grid.',
-                isPremium: false,
+                visibility: 'PUBLIC',
                 clubId: rca.id,
             },
             {
                 title: '🔒 Exclusive Tactical Breakdown: 3-5-2 Formation',
                 content: 'Premium locked details highlighting technical dressing room instructions, midfield rotations, and counters schemes.',
-                isPremium: true,
+                visibility: 'PREMIUM',
                 clubId: rca.id,
             },
             {
                 title: 'New Training Kits Revealed',
                 content: 'Check out the home collection colors framework designed natively for the premium athletic cycles.',
-                isPremium: false,
+                visibility: 'PUBLIC',
                 clubId: wac.id,
             },
         ],
@@ -87,7 +95,7 @@ async function main() {
     await prisma.subscription.create({
         data: {
             status: 'ACTIVE',
-            userId: fanUser.id,
+            fanId: fanUser.id,
             clubId: rca.id,
         },
     })

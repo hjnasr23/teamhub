@@ -189,7 +189,7 @@ export default function DashboardLayout({
           </div>
 
           {/* ── Right: Actions ───────────────────────────────────── */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-4 sm:gap-6">
             
             {/* Conditional Context Button: Club Admin */}
             {isAdmin && (

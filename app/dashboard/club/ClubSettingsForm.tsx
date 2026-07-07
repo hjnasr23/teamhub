@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { UploadCloud, X, Save } from "lucide-react";
+import { UploadCloud, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadClubAsset, updateClubSettingsAction } from "@/lib/media-actions";
 
 export default function ClubSettingsForm({
+  t,
   clubId,
   initialDescription,
   initialPrimaryColor,
@@ -13,6 +14,7 @@ export default function ClubSettingsForm({
   initialLogoUrl,
   initialBannerUrl
 }: {
+  t: any;
   clubId: string;
   initialDescription: string | null;
   initialPrimaryColor: string;
@@ -84,7 +86,7 @@ export default function ClubSettingsForm({
       });
 
       if (!res.success) throw new Error(res.error || "Failed to save settings");
-      setMessage("Settings saved successfully!");
+      setMessage(t.successMsg || "Settings saved successfully!");
 
     } catch (err: any) {
       setMessage("Error: " + err.message);
@@ -104,17 +106,17 @@ export default function ClubSettingsForm({
       {/* Media Uploads */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-text-dark dark:text-slate-300">Club Logo</label>
+          <label className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">{t.clubLogo}</label>
           <div 
             onClick={() => logoInputRef.current?.click()}
-            className="border-2 border-dashed border-border-custom rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-neutral-bg-alt h-32 relative overflow-hidden"
+            className="border-2 border-dashed border-gray-300 dark:border-gray-800 bg-gray-50 dark:bg-[#111a2e] rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-500/50 h-32 relative overflow-hidden"
           >
             {logoPreview ? (
               <img src={logoPreview} alt="Logo Preview" className="h-full object-contain" />
             ) : (
               <div className="text-emerald-500 flex flex-col items-center">
                 <UploadCloud className="h-6 w-6 mb-2" />
-                <span className="text-xs font-semibold">Upload Logo</span>
+                <span className="text-xs font-semibold">{t.uploadLogo}</span>
               </div>
             )}
           </div>
@@ -122,17 +124,17 @@ export default function ClubSettingsForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-text-dark dark:text-slate-300">Banner Image</label>
+          <label className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">{t.bannerImage}</label>
           <div 
             onClick={() => bannerInputRef.current?.click()}
-            className="border-2 border-dashed border-border-custom rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-neutral-bg-alt h-32 relative overflow-hidden"
+            className="border-2 border-dashed border-gray-300 dark:border-gray-800 bg-gray-50 dark:bg-[#111a2e] rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-500/50 h-32 relative overflow-hidden"
           >
             {bannerPreview ? (
               <img src={bannerPreview} alt="Banner Preview" className="h-full w-full object-cover" />
             ) : (
               <div className="text-emerald-500 flex flex-col items-center">
                 <UploadCloud className="h-6 w-6 mb-2" />
-                <span className="text-xs font-semibold">Upload Banner</span>
+                <span className="text-xs font-semibold">{t.uploadBanner}</span>
               </div>
             )}
           </div>
@@ -143,29 +145,39 @@ export default function ClubSettingsForm({
       {/* Colors */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-text-dark dark:text-slate-300">Primary Color (Hex)</label>
+          <label className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">{t.primaryColor}</label>
           <div className="flex gap-3 items-center">
-            <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="h-10 w-10 p-1 rounded border border-border-custom" />
-            <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 rounded-lg border border-border-custom px-3 py-2 text-sm uppercase" />
+            <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="h-10 w-10 p-1 rounded border border-gray-300 dark:border-gray-800" />
+            <input 
+              type="text" 
+              value={primaryColor} 
+              onChange={(e) => setPrimaryColor(e.target.value)} 
+              className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-[#111a2e] border border-gray-300 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500 text-sm transition-colors uppercase" 
+            />
           </div>
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-text-dark dark:text-slate-300">Secondary Color (Hex)</label>
+          <label className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">{t.secondaryColor}</label>
           <div className="flex gap-3 items-center">
-            <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="h-10 w-10 p-1 rounded border border-border-custom" />
-            <input type="text" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="flex-1 rounded-lg border border-border-custom px-3 py-2 text-sm uppercase" />
+            <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="h-10 w-10 p-1 rounded border border-gray-300 dark:border-gray-800" />
+            <input 
+              type="text" 
+              value={secondaryColor} 
+              onChange={(e) => setSecondaryColor(e.target.value)} 
+              className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-[#111a2e] border border-gray-300 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500 text-sm transition-colors uppercase" 
+            />
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-text-dark dark:text-slate-300">Club Description</label>
+        <label className="text-xs font-semibold tracking-wider text-gray-500 dark:text-gray-400 uppercase">{t.clubDescription}</label>
         <textarea 
           rows={3}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Brief description about the club..." 
-          className="w-full resize-none rounded-lg border border-border-custom px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none"
+          placeholder={t.descPlaceholder} 
+          className="w-full resize-none px-4 py-3 bg-gray-50 dark:bg-[#111a2e] border border-gray-300 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500 text-sm transition-colors autofill:bg-gray-50 dark:autofill:bg-[#111a2e]"
         />
       </div>
 
@@ -173,10 +185,10 @@ export default function ClubSettingsForm({
         <Button 
           type="submit" 
           disabled={isSubmitting}
-          className="gap-2 bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
+          className="gap-2 bg-emerald-500 text-white font-bold hover:bg-emerald-600 disabled:opacity-50"
         >
           <Save className="h-4 w-4" />
-          {isSubmitting ? "Saving..." : "Save Settings"}
+          {isSubmitting ? t.saving : t.saveSettings}
         </Button>
       </div>
     </form>
