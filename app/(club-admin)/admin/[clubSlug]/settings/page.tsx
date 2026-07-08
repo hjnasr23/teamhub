@@ -1,6 +1,3 @@
-"use client";
-
-import { use } from "react";
 import { Button } from "@/components/ui/button";
 import { Settings, Sliders, Palette, Landmark, ShieldCheck } from "lucide-react";
 
@@ -8,8 +5,12 @@ interface PageProps {
   params: Promise<{ clubSlug: string }>;
 }
 
-export default function ClubSettingsPage({ params }: PageProps) {
-  const { clubSlug } = use(params);
+export const generateStaticParams = () => {
+  return [{ clubSlug: 'default' }];
+};
+
+export default async function ClubSettingsPage({ params }: PageProps) {
+  const { clubSlug } = await params;
 
   return (
     <div className="space-y-8">
@@ -33,7 +34,7 @@ export default function ClubSettingsPage({ params }: PageProps) {
               Tenant Portal Branding
             </h2>
 
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
@@ -104,7 +105,7 @@ export default function ClubSettingsPage({ params }: PageProps) {
               Subscription Tier Configurations
             </h2>
 
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6">
               <div className="space-y-4">
                 {/* Bronze */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-900/40 border border-slate-850 rounded-xl gap-4">

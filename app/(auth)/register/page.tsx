@@ -1,13 +1,21 @@
-import React from "react";
+"use client";
+
+import React, { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import RegisterForm from "./RegisterForm";
 
-type Props = {
-  searchParams: Promise<{ lang?: string }>;
-};
-
-export default async function RegisterPage({ searchParams }: Props) {
-  const resolvedParams = await searchParams;
-  const lang = (resolvedParams.lang === 'ar' || resolvedParams.lang === 'fr') ? resolvedParams.lang : 'en';
+function RegisterPageContent() {
+  const searchParams = useSearchParams();
+  const langParam = searchParams.get("lang");
+  const lang = (langParam === 'ar' || langParam === 'fr') ? langParam : 'en';
 
   return <RegisterForm lang={lang} />;
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-[#060b13]" />}>
+      <RegisterPageContent />
+    </Suspense>
+  );
 }

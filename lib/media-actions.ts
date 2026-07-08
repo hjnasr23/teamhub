@@ -1,17 +1,40 @@
-"use server";
-
 import { createClient } from '@supabase/supabase-js';
-import { prisma } from './db';
-import { revalidatePath } from 'next/cache';
+
+// Dynamically load server-only modules
+const getPrisma = async () => {
+  if (typeof window === "undefined") {
+    const { prisma } = await import("./db");
+    return prisma;
+  }
+  return null;
+};
+
+const getRevalidatePath = async () => {
+  if (typeof window === "undefined") {
+    const { revalidatePath } = await import("next/cache");
+    return revalidatePath;
+  }
+  return null;
+};
 
 export async function uploadPostMedia(formData: FormData) {
-  try {
-    const file = formData.get('file') as File | null;
-    
-    if (!file) {
-      throw new Error("No file provided");
-    }
+  const file = formData.get('file') as File | null;
+  if (!file) {
+    throw new Error("No file provided");
+  }
 
+  if (typeof window !== "undefined") {
+    // Client-side mockup for Static Export Mode
+    // Simulated upload delay
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return { 
+      success: true, 
+      mediaUrl: URL.createObjectURL(file), // Generate local mock URL for immediate UI representation
+      mediaType: file.type.startsWith('video/') ? 'video' : 'image'
+    };
+  }
+
+  try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -19,19 +42,15 @@ export async function uploadPostMedia(formData: FormData) {
       throw new Error("Supabase API keys are missing in the runtime environment.");
     }
 
-    // Initialize Supabase client lazily on demand
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Sanitize file name
     const fileExtension = file.name.split('.').pop();
     const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
     const filePath = `posts/${uniqueFilename}`;
 
-    // Safe Binary Buffer Conversion
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload to Supabase Storage
     const { data, error } = await supabase.storage
       .from('club-media')
       .upload(filePath, buffer, {
@@ -39,13 +58,11 @@ export async function uploadPostMedia(formData: FormData) {
         upsert: true
       });
 
-    // Graceful Error Fallback
     if (error) {
       console.error("Supabase storage error:", error);
       throw new Error(`Supabase Storage Error: Please check if your bucket 'club-media' allows public inserts. Original error: ${error.message}`);
     }
 
-    // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from('club-media')
       .getPublicUrl(data.path);
@@ -70,7 +87,25 @@ export async function createPostAction(data: {
   mediaType?: string | null;
   visibility?: 'PUBLIC' | 'PREMIUM';
 }) {
+  if (typeof window !== "undefined") {
+    // Client-side mockup
+    const mockPost = {
+      id: "mock-post-" + Date.now(),
+      title: data.title,
+      content: data.content,
+      clubId: data.clubId,
+      mediaUrl: data.mediaUrl || null,
+      mediaType: data.mediaType || null,
+      visibility: data.visibility || 'PUBLIC',
+      createdAt: new Date(),
+    };
+    return { success: true, data: mockPost };
+  }
+
   try {
+    const prisma = await getPrisma();
+    if (!prisma) return { success: false, error: "Database not available." };
+
     const post = await prisma.post.create({
       data: {
         title: data.title,
@@ -82,9 +117,11 @@ export async function createPostAction(data: {
       }
     });
 
-    // Revalidate paths that might show this post
-    revalidatePath('/dashboard/club');
-    revalidatePath('/');
+    const revalidatePath = await getRevalidatePath();
+    if (revalidatePath) {
+      revalidatePath('/dashboard/club');
+      revalidatePath('/');
+    }
     
     return { success: true, data: post };
   } catch (err: any) {
@@ -101,7 +138,23 @@ export async function updateClubSettingsAction(data: {
   logoUrl?: string;
   bannerUrl?: string;
 }) {
+  if (typeof window !== "undefined") {
+    // Client-side mockup
+    return { 
+      success: true, 
+      data: { 
+        id: data.clubId, 
+        description: data.description,
+        primaryColor: data.primaryColor,
+        secondaryColor: data.secondaryColor,
+      } 
+    };
+  }
+
   try {
+    const prisma = await getPrisma();
+    if (!prisma) return { success: false, error: "Database not available." };
+
     const updated = await prisma.club.update({
       where: { id: data.clubId },
       data: {
@@ -113,8 +166,11 @@ export async function updateClubSettingsAction(data: {
       }
     });
 
-    revalidatePath('/dashboard/club');
-    revalidatePath(`/clubs/${updated.slug}`);
+    const revalidatePath = await getRevalidatePath();
+    if (revalidatePath) {
+      revalidatePath('/dashboard/club');
+      revalidatePath(`/clubs/${updated.slug}`);
+    }
     return { success: true, data: updated };
   } catch (err: any) {
     console.error("Update club settings error:", err);
@@ -123,10 +179,15 @@ export async function updateClubSettingsAction(data: {
 }
 
 export async function uploadClubAsset(formData: FormData, folder: string = "branding") {
-  try {
-    const file = formData.get('file') as File | null;
-    if (!file) throw new Error("No file provided");
+  const file = formData.get('file') as File | null;
+  if (!file) throw new Error("No file provided");
 
+  if (typeof window !== "undefined") {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return { success: true, mediaUrl: URL.createObjectURL(file) };
+  }
+
+  try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!supabaseUrl || !supabaseAnonKey) throw new Error("Supabase API keys are missing in the runtime environment.");

@@ -1,10 +1,13 @@
 import React from "react";
 import Link from "next/link";
 import { Users, Landmark, Coins, TrendingUp, Sparkles, BookOpen, UserCheck, Play } from "lucide-react";
-
 interface PageProps {
   params: Promise<{ clubSlug: string }>;
 }
+
+export const generateStaticParams = () => {
+  return [{ clubSlug: 'default' }];
+};
 
 export default async function ClubAdminDashboard({ params }: PageProps) {
   const { clubSlug } = await params;

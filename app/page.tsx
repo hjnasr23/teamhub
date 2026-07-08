@@ -1,6 +1,9 @@
+"use client";
+
+import React, { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { prisma } from "@/lib/db";
 import {
   Shield,
   Coins,
@@ -227,32 +230,45 @@ const dictionary: Record<string, {
   },
 };
 
-export default async function MarketingPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ lang?: string }>;
-}) {
-  // 0. Resolve language from URL query parameter
-  const params = await searchParams;
-  const lang = params.lang || "en";
+function MarketingPageContent() {
+  const searchParams = useSearchParams();
+  const lang = searchParams.get("lang") || "en";
   const t = dictionary[lang] || dictionary.en;
 
-  // 1. Parallel Dynamic Data Fetching via Promise.all
-  const [
-    totalClubs,
-    totalFans,
-    totalPosts,
-    totalActiveSubs,
-    clubs,
-  ] = await Promise.all([
-    prisma.club.count(),
-    prisma.user.count({ where: { role: "FAN" } }),
-    prisma.post.count(),
-    prisma.subscription.count({ where: { status: "ACTIVE" } }),
-    prisma.club.findMany({
-      orderBy: { subscribersCount: "desc" },
-    }),
-  ]);
+  // Mock static data for Static HTML Export Mode
+  const totalClubs = 3;
+  const totalFans = 14290;
+  const totalPosts = 42;
+  const totalActiveSubs = 14245;
+  const clubs = [
+    {
+      id: "1",
+      name: "Raja Casablanca",
+      slug: "raja-casablanca",
+      city: "Casablanca",
+      subscribersCount: 14290,
+      primaryColor: "#10B981",
+      logoInitials: "RCA"
+    },
+    {
+      id: "2",
+      name: "Wydad Casablanca",
+      slug: "wydad-casablanca",
+      city: "Casablanca",
+      subscribersCount: 12800,
+      primaryColor: "#EF4444",
+      logoInitials: "WAC"
+    },
+    {
+      id: "3",
+      name: "Real Madrid Casablanca",
+      slug: "real-madrid-casablanca",
+      city: "Casablanca",
+      subscribersCount: 9500,
+      primaryColor: "#1E3A8A",
+      logoInitials: "RMC"
+    }
+  ];
 
   // Average revenue calculation logic
   const totalRevenue = totalActiveSubs * 50;
@@ -643,5 +659,13 @@ export default async function MarketingPage({
         </section>
       </div>
     </div>
+  );
+}
+
+export default function MarketingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-bg-alt" />}>
+      <MarketingPageContent />
+    </Suspense>
   );
 }

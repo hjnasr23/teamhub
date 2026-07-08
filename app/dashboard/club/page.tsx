@@ -1,15 +1,18 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, useTransition, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   TrendingUp, 
   Users, 
   Activity,
   Globe,
-  Clock
+  Clock,
+  Loader2
 } from "lucide-react";
 import CreatePostForm from "./CreatePostForm";
 import ClubSettingsForm from "./ClubSettingsForm";
-import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/actions";
+import { getClubAdminData } from "@/lib/actions";
 
 /* ────────────────────────────────────────────────────────────────────
  *  i18n Dictionary — en / fr / ar
@@ -63,65 +66,67 @@ const clubDashboardTranslations = {
     premiumLabel: "Premium Content 🔒",
     noPosts: "No posts found",
     noClub: "No Club Assigned",
-    noClubDesc: "Please contact the Super-Admin to provision a club for your account.",
-    unauthorized: "Unauthorized. Please sign in as a Club Administrator."
+    noClubDesc: "Please contact the system administrator to configure and assign a club to your profile.",
+    unauthorized: "Unauthorized. Please log in as a Club Admin.",
+    loading: "Loading club dashboard..."
   },
   fr: {
-    clubOverview: "Vue d'ensemble du club",
+    clubOverview: "Aperçu du Club",
     clubOverviewDesc: "Gérez les analyses, le contenu et les supporters de votre club.",
     totalRevenue: "Revenu Total",
     thisMonth: "ce mois-ci",
     activeMembers: "Membres Actifs",
     supporters: "Supporters",
     conversionRate: "Taux de Conversion",
-    createNewPost: "Créer un nouveau post",
+    createNewPost: "Créer un Nouveau Message",
     createNewPostDesc: "Rédigez des annonces ou des mises à jour premium pour vos supporters.",
-    postTitle: "Titre de la Publication",
-    postTitlePlaceholder: "Mises à jour du jour de match...",
+    postTitle: "Titre du Message",
+    postTitlePlaceholder: "Mises à jour du jour du match...",
     content: "Contenu",
     contentPlaceholder: "Écrivez votre mise à jour ici...",
     visibility: "Visibilité",
     public: "Public",
     publicDesc: "Gratuit pour tous",
     premiumOnly: "Premium Uniquement",
-    premiumDesc: "Verrouillé par le niveau à 50 MAD/mois",
-    publishPost: "Publier",
+    premiumDesc: "Bloqué derrière le niveau de 50 MAD/mois",
+    publishPost: "Publier le Message",
     uploading: "Téléchargement...",
-    recentPosts: "Publications Récentes",
-    tablePostTitle: "Titre",
+    recentPosts: "Messages Récents",
+    tablePostTitle: "Titre du Message",
     tableDate: "Date",
     tableVisibility: "Visibilité",
     tableInteractions: "Interactions",
     revenueAmount: "MAD",
     currencyFirst: false,
     clubSettings: "Paramètres du Club",
-    clubSettingsDesc: "Personnalisez votre image de marque et votre profil public.",
+    clubSettingsDesc: "Personnalisez votre marque et votre profil public.",
     clubLogo: "Logo du Club",
     bannerImage: "Image de Bannière",
     primaryColor: "Couleur Primaire (Hex)",
     secondaryColor: "Couleur Secondaire (Hex)",
     clubDescription: "Description du Club",
     descPlaceholder: "Brève description du club...",
-    saveSettings: "Enregistrer les paramètres",
+    saveSettings: "Enregistrer les Paramètres",
     saving: "Enregistrement...",
-    uploadLogo: "Télécharger le logo",
-    uploadBanner: "Télécharger la bannière",
-    attachMedia: "Joindre un média (Optionnel)",
-    clickToUpload: "Cliquez pour télécharger une image ou vidéo",
+    uploadLogo: "Télécharger le Logo",
+    uploadBanner: "Télécharger la Bannière",
+    attachMedia: "Joindre un Média (Optionnel)",
+    clickToUpload: "Cliquez pour télécharger une image ou une vidéo",
     mediaSpecs: "MP4, WebM, PNG, JPG ou GIF (max. 50 Mo)",
-    postVisibility: "Visibilité du post",
+    postVisibility: "Visibilité du Message",
     premiumLabel: "Contenu Premium 🔒",
-    noPosts: "Aucun post trouvé",
+    noPosts: "Aucun message trouvé",
     noClub: "Aucun Club Assigné",
-    noClubDesc: "Veuillez contacter le Super-Admin pour attribuer un club à votre compte.",
-    unauthorized: "Non autorisé. Veuillez vous connecter en tant qu'administrateur de club."
+    noClubDesc: "Veuillez contacter l'administrateur du système pour configurer et associer un club à votre profil.",
+    unauthorized: "Non autorisé. Veuillez vous connecter en tant qu'administrateur de club.",
+    loading: "Chargement du tableau de bord..."
   },
   ar: {
     clubOverview: "نظرة عامة على النادي",
     clubOverviewDesc: "إدارة تحليلات النادي والمحتوى والمشجعين.",
     totalRevenue: "إجمالي الإيرادات",
     thisMonth: "هذا الشهر",
-    activeMembers: "الأعضاء النشطون",
+    activeMembers: "الأعضاء النشطين",
     supporters: "المشجعين",
     conversionRate: "معدل التحويل",
     createNewPost: "إنشاء منشور جديد",
@@ -130,22 +135,22 @@ const clubDashboardTranslations = {
     postTitlePlaceholder: "تحديثات يوم المباراة...",
     content: "المحتوى",
     contentPlaceholder: "اكتب تحديثك هنا...",
-    visibility: "الرؤية",
+    visibility: "الظهور",
     public: "عام",
     publicDesc: "مجاني للجميع",
-    premiumOnly: "مميز فقط",
-    premiumDesc: "مقفل خلف فئة 50 درهم/شهر",
+    premiumOnly: "المميز فقط",
+    premiumDesc: "مغلق خلف فئة 50 درهم/شهر",
     publishPost: "نشر المنشور",
     uploading: "جاري الرفع...",
-    recentPosts: "المنشورات الحديثة",
+    recentPosts: "المنشورات الأخيرة",
     tablePostTitle: "عنوان المنشور",
     tableDate: "التاريخ",
-    tableVisibility: "الرؤية",
+    tableVisibility: "الظهور",
     tableInteractions: "التفاعلات",
     revenueAmount: "درهم",
-    currencyFirst: true,
+    currencyFirst: false,
     clubSettings: "إعدادات النادي",
-    clubSettingsDesc: "تخصيص الهوية البصرية والملف التعريفي العام للنادي.",
+    clubSettingsDesc: "خصص هويتك البصرية وملفك الشخصي العام.",
     clubLogo: "شعار النادي",
     bannerImage: "صورة الغلاف",
     primaryColor: "اللون الأساسي (Hex)",
@@ -164,56 +169,73 @@ const clubDashboardTranslations = {
     noPosts: "لم يتم العثور على منشورات",
     noClub: "لم يتم تعيين نادٍ",
     noClubDesc: "يرجى الاتصال بالمسؤول العام لإنشاء وتعيين نادٍ لحسابك.",
-    unauthorized: "غير مصرح به. يرجى تسجيل الدخول كمشرف للنادي."
+    unauthorized: "غير مصرح به. يرجى تسجيل الدخول كمشرف للنادي.",
+    loading: "جاري تحميل لوحة التحكم..."
   }
 } as const;
 
-export default async function ClubAdminDashboard({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
-  const params = await searchParams;
-  const langKey = (params.lang || "en") as "en" | "fr" | "ar";
+interface ClubData {
+  id: string;
+  name: string;
+  primaryColor: string;
+  secondaryColor: string;
+  logoInitials: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+}
+
+interface PostData {
+  id: string;
+  title: string;
+  createdAt: Date;
+  mediaUrl: string | null;
+  mediaType: string | null;
+}
+
+function ClubAdminDashboardContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const langKey = (searchParams.get("lang") || "en") as "en" | "fr" | "ar";
   const t = clubDashboardTranslations[langKey] || clubDashboardTranslations.en;
   const isRTL = langKey === "ar";
 
-  const session = await getSession();
-  
-  if (!session || session.role !== "CLUB_ADMIN") {
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const [club, setClub] = useState<ClubData | null>(null);
+  const [activeMembers, setActiveMembers] = useState(0);
+  const [allFansCount, setAllFansCount] = useState(0);
+  const [recentPosts, setRecentPosts] = useState<PostData[]>([]);
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      const response = await getClubAdminData();
+      if (response.success && response.data) {
+        setClub(response.data.club);
+        setActiveMembers(response.data.activeMembers);
+        setAllFansCount(response.data.allFansCount);
+        setRecentPosts(response.data.recentPosts);
+        setAuthorized(true);
+      } else {
+        router.push("/login?lang=" + langKey);
+      }
+      setLoading(false);
+    }
+    loadDashboardData();
+  }, [router, langKey]);
+
+  if (loading) {
     return (
-      <div className="pt-44 pb-16 min-h-screen w-full bg-slate-50 dark:bg-[#060b13] text-gray-900 dark:text-white flex items-center justify-center p-4">
-        {t.unauthorized}
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        <p className="mt-4 text-sm text-text-muted">{t.loading}</p>
       </div>
     );
   }
 
-  // Fetch the logged-in user's assigned club
-  const adminUser = await prisma.user.findUnique({
-    where: { id: session.userId },
-    include: { managedClub: true }
-  });
-
-  if (!adminUser?.managedClub) {
-    return (
-      <div className="pt-44 pb-16 min-h-screen w-full bg-slate-50 dark:bg-[#060b13] text-gray-900 dark:text-white flex items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold">{t.noClub}</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">{t.noClubDesc}</p>
-        </div>
-      </div>
-    );
+  if (!authorized || !club) {
+    return null;
   }
-
-  const club = adminUser.managedClub;
-
-  // 1. Parallel Prisma Query Execution
-  const [activeMembers, allFansCount, recentPosts] = await Promise.all([
-    prisma.subscription.count({ where: { clubId: club.id, status: 'ACTIVE' } }),
-    prisma.user.count({ where: { role: 'FAN' } }),
-    prisma.post.findMany({ 
-      where: { clubId: club.id }, 
-      select: { id: true, title: true, createdAt: true, mediaUrl: true, mediaType: true },
-      orderBy: { createdAt: 'desc' }, 
-      take: 5 
-    })
-  ]);
 
   // Statistics Calculation
   const totalRevenue = activeMembers * 50;
@@ -249,14 +271,13 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
               <span className="text-sm font-semibold uppercase tracking-wider">{t.totalRevenue}</span>
               <Activity className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
             </div>
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-gray-900 dark:text-white">
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-extrabold tracking-tight">
                 {t.currencyFirst ? `${t.revenueAmount} ${totalRevenue.toLocaleString()}` : `${totalRevenue.toLocaleString()} ${t.revenueAmount}`}
               </span>
             </div>
-            <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-3 w-3" />
-              +12% {t.thisMonth}
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {t.thisMonth}
             </div>
           </div>
 
@@ -266,9 +287,11 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
               <span className="text-sm font-semibold uppercase tracking-wider">{t.activeMembers}</span>
               <Users className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
             </div>
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{activeMembers.toLocaleString()}</span>
-              <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">/ {t.supporters}</span>
+            <div className="mt-2">
+              <span className="text-3xl font-extrabold tracking-tight">{activeMembers.toLocaleString()}</span>
+            </div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {t.supporters}
             </div>
           </div>
 
@@ -276,27 +299,34 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
           <div className="flex flex-col bg-white dark:bg-[#0c1420] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-6 transition-all">
             <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
               <span className="text-sm font-semibold uppercase tracking-wider">{t.conversionRate}</span>
-              <Activity className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+              <TrendingUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
             </div>
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{conversionRate}%</span>
+            <div className="mt-2">
+              <span className="text-3xl font-extrabold tracking-tight">{conversionRate}%</span>
+            </div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {t.supporters}
             </div>
           </div>
         </div>
 
-        {/* 2. Content Publisher Engine & Settings Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white dark:bg-[#0c1420] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t.createNewPost}</h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t.createNewPostDesc}</p>
-            
+        {/* 2. Setup forms Grid layout */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* Post publishing form */}
+          <div className="bg-white dark:bg-[#0c1420] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-6 sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t.createNewPost}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t.createNewPostDesc}</p>
+            </div>
             <CreatePostForm t={t} clubId={club.id} />
           </div>
 
-          <div className="bg-white dark:bg-[#0c1420] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t.clubSettings}</h2>
-            <p className="mt-1 mb-6 text-sm text-gray-500 dark:text-gray-400">{t.clubSettingsDesc}</p>
-            
+          {/* Club profile customizer */}
+          <div className="bg-white dark:bg-[#0c1420] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-6 sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t.clubSettings}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t.clubSettingsDesc}</p>
+            </div>
             <ClubSettingsForm 
               t={t}
               clubId={club.id}
@@ -359,5 +389,13 @@ export default async function ClubAdminDashboard({ searchParams }: { searchParam
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClubAdminDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-[#060b13] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-emerald-500" /></div>}>
+      <ClubAdminDashboardContent />
+    </Suspense>
   );
 }

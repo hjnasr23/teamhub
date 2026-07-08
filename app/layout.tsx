@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -48,10 +49,12 @@ import Footer from "@/components/Footer";
            enableSystem={false}
            disableTransitionOnChange
          >
-           <DashboardLayout isAdmin={isAdmin} isLoggedIn={isLoggedIn}>
-             {children}
-             <Footer />
-           </DashboardLayout>
+           <Suspense fallback={<div className="min-h-screen bg-neutral-bg-alt" />}>
+             <DashboardLayout isAdmin={isAdmin} isLoggedIn={isLoggedIn}>
+               {children}
+               <Footer />
+             </DashboardLayout>
+           </Suspense>
          </ThemeProvider>
        </body>
      </html>
