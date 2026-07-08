@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -34,11 +35,15 @@ async function main() {
 
     console.log('✅ Clubs injected successfully.')
 
-    // 3. Inject test authentication profiles
+    // 3. Hash passwords securely
+    const hashedPassword = await bcrypt.hash('password123', 10)
+    const superAdminPassword = await bcrypt.hash('SuperAdmin2026!', 10)
+
+    // 4. Inject test authentication profiles
     const adminUser = await prisma.user.create({
         data: {
             email: 'admin@teamhub.ma',
-            password: 'password123', // Hardcoded safely for localized testing phase
+            password: hashedPassword,
             firstName: 'Nasr-eddine',
             lastName: 'Hajji',
             role: 'CLUB_ADMIN',
@@ -48,7 +53,7 @@ async function main() {
     const fanUser = await prisma.user.create({
         data: {
             email: 'fan@teamhub.ma',
-            password: 'password123',
+            password: hashedPassword,
             firstName: 'Alex',
             lastName: 'Morgan',
             role: 'FAN',
@@ -58,16 +63,16 @@ async function main() {
     const superAdminUser = await prisma.user.create({
         data: {
             email: 'superadmin@teamhub.ma',
-            password: 'SuperAdmin2026!',
+            password: superAdminPassword,
             firstName: 'Super',
             lastName: 'Admin',
             role: 'SUPER_ADMIN',
         },
     })
 
-    console.log('✅ Auth test profiles credentials created.')
+    console.log('✅ Auth test profiles credentials created securely.')
 
-    // 4. Link some sample dynamic posts
+    // 5. Link some sample dynamic posts
     await prisma.post.createMany({
         data: [
             {
@@ -91,7 +96,7 @@ async function main() {
         ],
     })
 
-    // 5. Establish an active fan membership node link
+    // 6. Establish an active fan membership node link
     await prisma.subscription.create({
         data: {
             status: 'ACTIVE',

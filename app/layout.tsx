@@ -35,6 +35,16 @@ import Footer from "@/components/Footer";
    const session = await getSession();
    const isLoggedIn = !!session;
    const isAdmin = session?.role === "CLUB_ADMIN";
+   let adminClubSlug = null;
+
+   if (isAdmin) {
+     const { prisma } = await import("@/lib/db");
+     const user = await prisma.user.findUnique({
+       where: { id: session.userId },
+       include: { managedClub: true },
+     });
+     adminClubSlug = user?.managedClub?.slug || null;
+   }
 
    return (
      <html
@@ -50,7 +60,7 @@ import Footer from "@/components/Footer";
            disableTransitionOnChange
          >
            <Suspense fallback={<div className="min-h-screen bg-neutral-bg-alt" />}>
-             <DashboardLayout isAdmin={isAdmin} isLoggedIn={isLoggedIn}>
+             <DashboardLayout isAdmin={isAdmin} isLoggedIn={isLoggedIn} adminClubSlug={adminClubSlug}>
                {children}
                <Footer />
              </DashboardLayout>

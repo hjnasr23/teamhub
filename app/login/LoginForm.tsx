@@ -67,22 +67,27 @@ export default function LoginForm({ lang }: LoginFormProps) {
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const response = await loginAction(formData);
+      try {
+        const response = await loginAction(formData);
 
-      if (response.success && response.data) {
-        const role = response.data.role;
-        let redirectPath = `/dashboard/fan?lang=${lang}`;
+        if (response.success && response.data) {
+          const role = response.data.role;
+          let redirectPath = `/dashboard/fan?lang=${lang}`;
 
-        if (role === "SUPER_ADMIN") {
-          redirectPath = `/admin-gen?lang=${lang}`;
-        } else if (role === "CLUB_ADMIN") {
-          redirectPath = `/dashboard/club?lang=${lang}`;
+          if (role === "SUPER_ADMIN") {
+            redirectPath = `/admin-gen?lang=${lang}`;
+          } else if (role === "CLUB_ADMIN" && response.data.clubSlug) {
+            redirectPath = `/admin/${response.data.clubSlug}?lang=${lang}`;
+          }
+
+          window.location.href = redirectPath;
+        } else {
+          // Handles 401 Unauthorized / Invalid Credentials
+          setError(response.error || "Invalid credentials.");
         }
-
-        router.refresh();
-        router.push(redirectPath);
-      } else {
-        setError(response.error || "Invalid credentials.");
+      } catch (err) {
+        // Intercepts 500 Network or Server errors
+        setError("Network error: Unable to connect to the authentication server.");
       }
     });
   };

@@ -5,9 +5,7 @@ interface PageProps {
   params: Promise<{ clubSlug: string }>;
 }
 
-export const generateStaticParams = () => {
-  return [{ clubSlug: 'default' }];
-};
+
 
 export default async function ClubSettingsPage({ params }: PageProps) {
   const { clubSlug } = await params;
