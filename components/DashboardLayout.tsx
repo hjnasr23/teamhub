@@ -196,14 +196,14 @@ export default function DashboardLayout({
             {isAdmin && adminClubSlug && (
               <Link
                 href={`/admin/${adminClubSlug}?lang=${langKey}`}
-                className="hidden items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50 sm:flex"
+                className="hidden items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50 md:flex"
               >
                 <Trophy className="h-4 w-4" />
                 {t.adminDashboard}
               </Link>
             )}
 
-            <div className="flex items-center gap-1 text-xs font-semibold select-none">
+            <div className="hidden md:flex items-center gap-1 text-xs font-semibold select-none">
               {LANGS.map((lang, i) => {
                 const switcherParams = new URLSearchParams(searchParams.toString());
                 switcherParams.set("lang", lang.toLowerCase());
@@ -225,18 +225,20 @@ export default function DashboardLayout({
               })}
             </div>
 
-            <ThemeToggle />
+            <div className="hidden md:flex">
+              <ThemeToggle />
+            </div>
 
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
                 disabled={isPending}
-                className="hidden rounded-lg bg-rose-50 px-4 py-2 text-sm font-bold text-rose-600 shadow-sm transition-colors hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-950/50 sm:block"
+                className="hidden rounded-lg bg-rose-50 px-4 py-2 text-sm font-bold text-rose-600 shadow-sm transition-colors hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-950/50 md:block"
               >
                 {isPending ? t.signingOut : t.signOut}
               </button>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <Link
                   href={`/login?lang=${langKey}`}
                   className="rounded-lg px-3 py-2 text-sm font-bold text-text-muted hover:text-text-dark transition-colors"

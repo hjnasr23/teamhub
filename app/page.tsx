@@ -329,7 +329,7 @@ function MarketingPageContent() {
         {/* ──────────────────────────────────────────────────────────── */}
         {/*  HERO SECTION                                               */}
         {/* ──────────────────────────────────────────────────────────── */}
-        <section className="pb-20 pt-16 md:pb-28 md:pt-24">
+        <section className="pb-20 pt-28 md:pb-28 md:pt-32">
           <div className="mx-auto max-w-3xl text-center">
             {/* Headline */}
             <h1 className="font-display text-4xl font-extrabold tracking-tight text-text-dark sm:text-5xl md:text-6xl md:leading-[1.1]">
