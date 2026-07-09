@@ -505,3 +505,50 @@ export async function cancelSubscriptionAction(formData: FormData): Promise<Acti
     return { success: false, error: message };
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+ *  Get Landing Page Statistics (Dynamic Database Counts)
+ * ════════════════════════════════════════════════════════════════════ */
+
+export async function getLandingPageStats(): Promise<ActionResponse<{
+  clubs: number;
+  supporters: number;
+  posts: number;
+  revenue: number;
+}>> {
+  try {
+    const clubsCount = await prisma.club.count();
+    
+    // Sum the subscribersCount of all clubs to represent total registered supporters
+    const sumAggregate = await prisma.club.aggregate({
+      _sum: {
+        subscribersCount: true
+      }
+    });
+    const supportersCount = sumAggregate._sum.subscribersCount || 0;
+    
+    // Total posts in the system
+    const postsCount = await prisma.post.count();
+    
+    // Average Club Revenue: (Active subscriptions * 50 MAD) / clubsCount
+    const activeSubsCount = await prisma.subscription.count({
+      where: { status: "ACTIVE" }
+    });
+    const totalRevenue = activeSubsCount * 50;
+    const avgRevenue = clubsCount > 0 ? Math.round(totalRevenue / clubsCount) : 0;
+
+    return {
+      success: true,
+      data: {
+        clubs: clubsCount,
+        supporters: supportersCount,
+        posts: postsCount,
+        revenue: avgRevenue
+      }
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch landing page stats.";
+    return { success: false, error: message };
+  }
+}
+

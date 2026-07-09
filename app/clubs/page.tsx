@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import ClubsDirectoryClient from "./ClubsDirectoryClient";
 
+export const dynamic = "force-dynamic";
+
 /* ════════════════════════════════════════════════════════════════════
  *  PAGE COMPONENT
  * ════════════════════════════════════════════════════════════════════ */

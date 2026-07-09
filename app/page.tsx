@@ -30,6 +30,8 @@ const dictionary: Record<string, {
   statSupporters: string;
   statPosts: string;
   statRevenue: string;
+  statCurrency: string;
+  statPeriod: string;
   teamsTitle: string;
   teamsSubtitle: string;
   teamsEmpty: string;
@@ -235,49 +237,93 @@ function MarketingPageContent() {
   const lang = searchParams.get("lang") || "en";
   const t = dictionary[lang] || dictionary.en;
 
-  // Mock static data for Static HTML Export Mode
-  const totalClubs = 3;
-  const totalFans = 14290;
-  const totalPosts = 42;
-  const totalActiveSubs = 14245;
-  const clubs = [
-    {
-      id: "1",
-      name: "Raja Casablanca",
-      slug: "raja-casablanca",
-      city: "Casablanca",
-      subscribersCount: 14290,
-      primaryColor: "#10B981",
-      logoInitials: "RCA"
-    },
-    {
-      id: "2",
-      name: "Wydad Casablanca",
-      slug: "wydad-casablanca",
-      city: "Casablanca",
-      subscribersCount: 12800,
-      primaryColor: "#EF4444",
-      logoInitials: "WAC"
-    },
-    {
-      id: "3",
-      name: "Real Madrid Casablanca",
-      slug: "real-madrid-casablanca",
-      city: "Casablanca",
-      subscribersCount: 9500,
-      primaryColor: "#1E3A8A",
-      logoInitials: "RMC"
-    }
-  ];
+  // Fallback estimates (original mockup data) used while loading or if database connection fails
+  const FALLBACKS = {
+    clubs: 3,
+    supporters: 14290,
+    posts: 42,
+    revenue: 237417
+  };
 
-  // Average revenue calculation logic
-  const totalRevenue = totalActiveSubs * 50;
-  const avgRevenue = totalClubs > 0 ? Math.round(totalRevenue / totalClubs) : 0;
+  // Active React states for dynamic data and animated counter effect
+  const [mounted, setMounted] = React.useState(false);
+  const [clubsCount, setClubsCount] = React.useState(0);
+  const [supportersCount, setSupportersCount] = React.useState(0);
+  const [postsCount, setPostsCount] = React.useState(0);
+  const [revenueCount, setRevenueCount] = React.useState(0);
+  const [clubs, setClubs] = React.useState<any[]>([]);
 
-  // Format statistics for modern, clean display
-  const formattedTotalFans = new Intl.NumberFormat("en-US", { notation: "compact" }).format(totalFans);
-  const formattedTotalPosts = new Intl.NumberFormat("en-US", { notation: "compact" }).format(totalPosts);
-  const formattedAvgRevenue = new Intl.NumberFormat("en-US").format(avgRevenue);
+  React.useEffect(() => {
+    setMounted(true);
+    let active = true;
+
+    // Fetch dynamic database counts and clubs list from Next.js API Route
+    fetch("/api/stats")
+      .then((res) => {
+        if (!res.ok) throw new Error(`API stats fetch failed: status ${res.status}`);
+        return res.json();
+      })
+      .then((res) => {
+        if (!active) return;
+
+        const targets = {
+          clubs: typeof res?.data?.clubs === "number" ? res.data.clubs : FALLBACKS.clubs,
+          supporters: typeof res?.data?.supporters === "number" ? res.data.supporters : FALLBACKS.supporters,
+          posts: typeof res?.data?.posts === "number" ? res.data.posts : FALLBACKS.posts,
+          revenue: typeof res?.data?.revenue === "number" ? res.data.revenue : FALLBACKS.revenue
+        };
+
+        if (res?.data?.clubsList) {
+          setClubs(res.data.clubsList);
+        } else if (res?.fallback?.clubsList) {
+          setClubs(res.fallback.clubsList);
+        }
+
+        startAnimation(targets);
+      })
+      .catch((err) => {
+        console.error("Failed to load live database stats, using empty fallback list:", err);
+        if (!active) return;
+        setClubs([]); // Ensure no mock data is shown on error/empty database
+        startAnimation(FALLBACKS);
+      });
+
+    const startAnimation = (targets: typeof FALLBACKS) => {
+      let startTimestamp: number | null = null;
+      const duration = 2000; // Animation duration in ms (2 seconds)
+
+      const animate = (timestamp: number) => {
+        if (!active) return;
+        if (!startTimestamp) startTimestamp = timestamp;
+        const elapsed = timestamp - startTimestamp;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function: easeOutExpo for smooth slowing down
+        const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+        setClubsCount(Math.floor(easeProgress * targets.clubs));
+        setSupportersCount(Math.floor(easeProgress * targets.supporters));
+        setPostsCount(Math.floor(easeProgress * targets.posts));
+        setRevenueCount(Math.floor(easeProgress * targets.revenue));
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    };
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Format statistics for modern, clean display with required suffixes
+  const formattedTotalClubs = `${clubsCount}+`;
+  const formattedTotalFans = new Intl.NumberFormat("en-US", { notation: "compact" }).format(supportersCount) + "+";
+  const formattedTotalPosts = `${postsCount}+`;
+  const formattedAvgRevenue = new Intl.NumberFormat("en-US").format(revenueCount);
 
   const steps = [
     {
@@ -362,7 +408,7 @@ function MarketingPageContent() {
           <div className="mx-auto mt-16 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border-custom bg-border-custom shadow-sm sm:grid-cols-4">
             <div className="bg-neutral-bg px-6 py-6 text-center transition-colors">
               <div className="font-display text-3xl font-extrabold tracking-tight text-text-dark">
-                {totalClubs}
+                {mounted ? formattedTotalClubs : "0+"}
               </div>
               <div className="mt-1 text-xs font-medium uppercase tracking-wider text-text-muted">
                 {t.statClubs}
@@ -370,7 +416,7 @@ function MarketingPageContent() {
             </div>
             <div className="bg-neutral-bg px-6 py-6 text-center transition-colors">
               <div className="font-display text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
-                {formattedTotalFans}
+                {mounted ? formattedTotalFans : "0+"}
               </div>
               <div className="mt-1 text-xs font-medium uppercase tracking-wider text-text-muted">
                 {t.statSupporters}
@@ -378,7 +424,7 @@ function MarketingPageContent() {
             </div>
             <div className="bg-neutral-bg px-6 py-6 text-center transition-colors">
               <div className="font-display text-3xl font-extrabold tracking-tight text-text-dark">
-                {formattedTotalPosts}
+                {mounted ? formattedTotalPosts : "0+"}
               </div>
               <div className="mt-1 text-xs font-medium uppercase tracking-wider text-text-muted">
                 {t.statPosts}
@@ -387,7 +433,7 @@ function MarketingPageContent() {
             <div className="bg-neutral-bg px-6 py-6 text-center transition-colors">
               <div className="flex items-baseline justify-center gap-1.5 font-display text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
                 {!isRTL && <span className="text-lg font-bold uppercase">{t.statCurrency}</span>}
-                {formattedAvgRevenue}
+                {mounted ? formattedAvgRevenue : "0"}
                 {isRTL && <span className="text-lg font-bold uppercase">{t.statCurrency}</span>}
                 <span className="text-sm font-bold opacity-80">{t.statPeriod}</span>
               </div>
@@ -411,7 +457,7 @@ function MarketingPageContent() {
             </p>
           </div>
 
-          {clubs.length === 0 ? (
+          {!mounted || clubs.length === 0 ? (
             <div className="rounded-2xl border border-border-custom bg-neutral-bg-alt py-12 text-center text-text-muted">
               <Shield className="mx-auto mb-3 h-8 w-8 opacity-20" />
               <p className="text-sm font-medium">{t.teamsEmpty}</p>

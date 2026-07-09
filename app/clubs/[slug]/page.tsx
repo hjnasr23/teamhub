@@ -2,9 +2,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/actions";
 import ClubPageClient from "./ClubPageClient";
 
-export const generateStaticParams = () => {
-  return [{ slug: 'default' }];
-};
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug: string }>;

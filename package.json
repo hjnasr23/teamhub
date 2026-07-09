@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "clean-marketing": "powershell -Command \"Remove-Item -Recurse -Force 'app/(marketing)'\""
+    "clean-marketing": "powershell -Command \"Remove-Item -Recurse -Force 'app/(marketing)'\"",
+    "clear-db": "tsx prisma/clear.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
