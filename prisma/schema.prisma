@@ -24,6 +24,17 @@ enum SubStatus {
   CANCELLED
 }
 
+enum ClubStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  APPROVED
+}
+
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
@@ -50,11 +61,13 @@ model Club {
   primaryColor     String         @default("#10B981")
   secondaryColor   String         @default("#059669")
   subscribersCount Int            @default(0)
+  status           ClubStatus     @default(ACTIVE)
   createdAt        DateTime       @default(now())
 
-  admins        User[]         @relation("AdminToClub")
-  posts         Post[]
-  subscriptions Subscription[]
+  admins          User[]          @relation("AdminToClub")
+  posts           Post[]
+  subscriptions   Subscription[]
+  payoutRequests  PayoutRequest[]
 }
 
 model Post {
@@ -79,4 +92,22 @@ model Subscription {
   user      User     @relation(fields: [fanId], references: [id], onDelete: Cascade)
   clubId    String
   club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model PlatformSetting {
+  id               String   @id @default("global")
+  commissionRate   Float    @default(0.10)
+  stripeLiveMode   Boolean  @default(false)
+  cmiLiveMode      Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+}
+
+model PayoutRequest {
+  id          String       @id @default(uuid())
+  amount      Int
+  status      PayoutStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  
+  clubId      String
+  club        Club         @relation(fields: [clubId], references: [id], onDelete: Cascade)
 }

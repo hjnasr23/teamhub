@@ -2,7 +2,7 @@
 
 import React, { Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 
 const footerTranslations = {
   en: {
@@ -135,6 +135,9 @@ function FooterContent() {
 }
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <footer className="border-t border-border-custom bg-neutral-bg-alt py-12 text-text-muted transition-colors duration-200">
       <Suspense fallback={<div className="mx-auto w-full max-w-7xl px-4 min-h-[200px]" />}>

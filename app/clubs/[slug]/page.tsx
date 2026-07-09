@@ -40,6 +40,8 @@ export default async function ClubPage({ params }: PageProps) {
     primaryColor: club.primaryColor,
     secondaryColor: club.secondaryColor,
     logoInitials: (club as any).logoInitials || club.name.substring(0, 3).toUpperCase(),
+    logoUrl: club.logoUrl,
+    bannerUrl: club.bannerUrl,
     subscribersCount: club.subscribersCount,
     posts: club.posts.map((post) => ({
       id: post.id,

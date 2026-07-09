@@ -25,7 +25,7 @@ import {
  * ──────────────────────────────────────────────────────────────────── */
 
 const NAV_LINKS = [
-  { href: "/clubs", label: "Discover", icon: Home },
+  { href: "/clubs", label: "Clubs", icon: Home },
 ];
 
 /* ────────────────────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ export default function DashboardLayout({
 
   const navTranslations = {
     en: {
-      discover: "Discover",
+      discover: "Clubs",
       login: "Login",
       signUp: "Sign Up",
       signOut: "Sign Out",
@@ -67,7 +67,7 @@ export default function DashboardLayout({
       menu: "Menu"
     },
     fr: {
-      discover: "Découvrir",
+      discover: "Clubs",
       login: "Connexion",
       signUp: "S'inscrire",
       signOut: "Se déconnecter",
@@ -76,7 +76,7 @@ export default function DashboardLayout({
       menu: "Menu"
     },
     ar: {
-      discover: "اكتشف",
+      discover: "الأندية",
       login: "تسجيل الدخول",
       signUp: "إنشاء حساب",
       signOut: "تسجيل الخروج",
@@ -133,6 +133,14 @@ export default function DashboardLayout({
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
+
+  if (pathname.startsWith("/admin")) {
+    return (
+      <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-slate-50 transition-colors duration-300">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-neutral-bg-alt text-text-dark transition-colors duration-300">

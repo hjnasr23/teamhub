@@ -2,8 +2,13 @@
 
 import React, { Suspense } from "react";
 import Link from "next/link";
-import { Search, Users, ArrowRight, MapPin, Trophy } from "lucide-react";
+import { Search, Users, ArrowRight, MapPin, Trophy, Shield } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+
+const isValidUrl = (url: string | null | undefined) => {
+  if (!url) return false;
+  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/");
+};
 
 const dict: Record<
   string,
@@ -147,12 +152,17 @@ function ClubsDirectoryClientContent({ clubs }: { clubs: Club[] }) {
                   {/* Top row: avatar + metadata */}
                   <div>
                     <div className="mb-4 flex items-start justify-between">
-                      {/* Geometric initial badge */}
+                      {/* Geometric initial badge or image logo */}
                       <div
-                        className="flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm"
+                        className="flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm overflow-hidden bg-slate-200"
                         style={{ backgroundColor: club.primaryColor }}
                       >
-                        {club.logoInitials}
+                        {isValidUrl((club as any).logoUrl) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={(club as any).logoUrl} alt={club.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <Shield className="h-5 w-5 text-white" />
+                        )}
                       </div>
 
                       {/* Subscriber pill */}

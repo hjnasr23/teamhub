@@ -11,9 +11,15 @@ import {
   FileText,
   Flame,
   SearchX,
-  Lock
+  Lock,
+  Shield
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+
+const isValidUrl = (url: string | null | undefined) => {
+  if (!url) return false;
+  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/");
+};
 
 /* ════════════════════════════════════════════════════════════════════
  *  i18n Dictionary — en / fr / ar
@@ -191,17 +197,29 @@ function ClubPageClientContent({
 
         {/* PROFILE HEADER CARD */}
         <section className="relative overflow-hidden rounded-2xl border border-border-custom bg-neutral-bg shadow-sm dark:bg-slate-900">
-          <div className="h-32 sm:h-40" style={{ background: `linear-gradient(135deg, ${hex}, ${hex}cc, ${hex}88)` }}>
-            <div className="absolute inset-0 h-32 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:20px_20px] sm:h-40" />
+          <div className="h-32 sm:h-40 relative overflow-hidden bg-slate-150">
+            {isValidUrl(club.bannerUrl) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={club.bannerUrl!} alt={club.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${hex}, ${hex}cc, ${hex}88)` }}>
+                <div className="absolute inset-0 h-32 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:20px_20px] sm:h-40" />
+              </div>
+            )}
           </div>
 
           <div className="relative px-6 pb-6 sm:px-8 sm:pb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
-              <div className="-mt-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-[3px] border-neutral-bg shadow-md sm:-mt-12 sm:h-24 sm:w-24 dark:border-slate-900"
+              <div className="-mt-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-[3px] border-neutral-bg shadow-md sm:-mt-12 sm:h-24 sm:w-24 dark:border-slate-900 overflow-hidden bg-slate-200"
                 style={{ backgroundColor: hex }}>
-                <span className="font-display text-xl font-black text-white sm:text-2xl">
-                  {club.logoInitials || "CLUB"}
-                </span>
+                {isValidUrl(club.logoUrl) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={club.logoUrl!} alt={club.name} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="font-display text-xl font-black text-white sm:text-2xl">
+                    {club.logoInitials || "CLUB"}
+                  </span>
+                )}
               </div>
 
               <div className="flex-1 space-y-1">

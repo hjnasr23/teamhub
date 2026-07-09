@@ -23,6 +23,8 @@ export default async function ClubsDirectoryPage() {
     primaryColor: club.primaryColor,
     secondaryColor: club.secondaryColor,
     logoInitials: (club as any).logoInitials || club.name.substring(0, 3).toUpperCase(),
+    logoUrl: club.logoUrl,
+    bannerUrl: club.bannerUrl,
   }));
 
   return <ClubsDirectoryClient clubs={sanitizedClubs} />;
