@@ -2,27 +2,48 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 
 export async function createSuperAdminClub(data: {
   name: string;
-  slug: string;
-  primaryColor: string;
-  secondaryColor: string;
-  logoUrl?: string;
-  bannerUrl?: string;
+  email: string;
+  password: string;
 }) {
   try {
-    const club = await prisma.club.create({
-      data: {
-        name: data.name,
-        slug: data.slug,
-        city: "Unknown", // Default city
-        primaryColor: data.primaryColor,
-        secondaryColor: data.secondaryColor,
-        ...(data.logoUrl && { logoUrl: data.logoUrl }),
-        ...(data.bannerUrl && { bannerUrl: data.bannerUrl }),
-        status: "ACTIVE",
-      }
+    let slug = data.name.toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
+    // Check if slug exists, append random suffix if needed
+    const existing = await prisma.club.findUnique({ where: { slug } });
+    if (existing) {
+      slug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const club = await prisma.$transaction(async (tx) => {
+      // 1. Create the club
+      const createdClub = await tx.club.create({
+        data: {
+          name: data.name,
+          slug,
+          city: "Unknown", // Default city
+          status: "ACTIVE",
+        }
+      });
+
+      // 2. Create the associated CLUB_ADMIN user
+      await tx.user.create({
+        data: {
+          email: data.email,
+          password: hashedPassword,
+          role: "CLUB_ADMIN",
+          clubId: createdClub.id,
+        }
+      });
+
+      return createdClub;
     });
 
     revalidatePath('/admin-gen/clubs');
@@ -32,6 +53,28 @@ export async function createSuperAdminClub(data: {
   } catch (err: any) {
     console.error("Create club error:", err);
     return { success: false, error: err.message || "Failed to create club" };
+  }
+}
+
+export async function deleteClubAction(clubId: string) {
+  try {
+    await prisma.$transaction([
+      // Delete associated users who are admins of this club
+      prisma.user.deleteMany({
+        where: { clubId }
+      }),
+      // Delete the club itself
+      prisma.club.delete({
+        where: { id: clubId }
+      })
+    ]);
+
+    revalidatePath('/admin-gen/clubs');
+    revalidatePath('/admin-gen');
+    return { success: true };
+  } catch (err: any) {
+    console.error("Delete club error:", err);
+    return { success: false, error: err.message || "Failed to delete club" };
   }
 }
 

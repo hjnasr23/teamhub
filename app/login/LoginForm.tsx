@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
-import { loginAction } from "@/lib/actions";
+import { signIn } from "next-auth/react";
+import { getSession } from "@/lib/actions";
 
 // 1. Local Text Dictionary supporting Arabic, French, and English
 const dict = {
@@ -45,7 +46,7 @@ const dict = {
     dontHaveAccount: "ليس لديك حساب؟",
     signUp: "إنشاء حساب",
     tagline: "أشعل اللعبة،\nواستثمر الشغف.",
-    marketingText: "مرحبًا بك مجددًا في المنصة المصممة للفرق الرياضية الحديثة. أدر اشتراكاتك النشطة، واطلع على المحتوى الحصري، وتابع مسيرة فريقك المفضل."
+    marketingText: "مرحبًا بك مجددًا في المنصة المصممة للفرق الرياضية الحديثة. أدر اشتراكاتك النشطة، واطلع على المحتوى الحصرو، وتابع مسيرة فريقك المفضل."
   }
 };
 
@@ -61,29 +62,62 @@ export default function LoginForm({ lang }: LoginFormProps) {
   const t = dict[lang];
   const isRTL = lang === 'ar';
 
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      try {
+        const session = await getSession();
+        if (session) {
+          const role = session.role;
+          const clubSlug = session.clubSlug;
+          let redirectPath = `/dashboard/fan?lang=${lang}`;
+          if (role === "SUPER_ADMIN") {
+            redirectPath = `/admin-gen?lang=${lang}`;
+          } else if (role === "CLUB_ADMIN" && clubSlug) {
+            redirectPath = `/admin/${clubSlug}?lang=${lang}`;
+          }
+          router.push(redirectPath);
+          router.refresh();
+        }
+      } catch (err) {
+        // Safe to ignore
+      }
+    };
+    checkActiveSession();
+  }, [router, lang]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
     startTransition(async () => {
       try {
-        const response = await loginAction(formData);
+        const response = await signIn("credentials", {
+          redirect: false,
+          email,
+          password
+        }) as any;
 
-        if (response.success && response.data) {
-          const role = response.data.role;
+        if (response && response.ok) {
+          const role = response.role;
+          const clubSlug = response.clubSlug;
+          console.log("Login success:", { role, clubSlug });
+          
           let redirectPath = `/dashboard/fan?lang=${lang}`;
 
           if (role === "SUPER_ADMIN") {
             redirectPath = `/admin-gen?lang=${lang}`;
-          } else if (role === "CLUB_ADMIN" && response.data.clubSlug) {
-            redirectPath = `/admin/${response.data.clubSlug}?lang=${lang}`;
+          } else if (role === "CLUB_ADMIN" && clubSlug) {
+            redirectPath = `/admin/${clubSlug}?lang=${lang}`;
           }
 
-          window.location.href = redirectPath;
+          router.push(redirectPath);
+          router.refresh();
         } else {
           // Handles 401 Unauthorized / Invalid Credentials
-          setError(response.error || "Invalid credentials.");
+          setError(response?.error || "Invalid credentials.");
         }
       } catch (err) {
         // Intercepts 500 Network or Server errors

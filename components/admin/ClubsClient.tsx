@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import { Plus, MoreVertical, X, Shield } from "lucide-react";
-import { createSuperAdminClub, toggleClubStatus } from "@/lib/super-admin-actions";
-import { uploadClubAsset } from "@/lib/media-actions";
+import { createSuperAdminClub, toggleClubStatus, deleteClubAction } from "@/lib/super-admin-actions";
 import { useRouter } from "next/navigation";
 
 const isValidUrl = (url: string | null | undefined) => {
@@ -29,41 +28,18 @@ export default function ClubsClient({ initialClubs }: { initialClubs: any[] }) {
     try {
       const form = e.target as HTMLFormElement;
       const name = (form.elements.namedItem("name") as HTMLInputElement).value;
-      const slug = (form.elements.namedItem("slug") as HTMLInputElement).value;
-      const primaryColor = (form.elements.namedItem("primaryColor") as HTMLInputElement).value;
-      const secondaryColor = (form.elements.namedItem("secondaryColor") as HTMLInputElement).value;
-      
-      const logoFile = (form.elements.namedItem("logoFile") as HTMLInputElement).files?.[0];
-      const coverFile = (form.elements.namedItem("coverFile") as HTMLInputElement).files?.[0];
-
-      let logoUrl = undefined;
-      let bannerUrl = undefined;
-
-      if (logoFile) {
-        const formData = new FormData();
-        formData.append("file", logoFile);
-        const res = await uploadClubAsset(formData, "logos");
-        if (res.success) logoUrl = res.mediaUrl;
-      }
-
-      if (coverFile) {
-        const formData = new FormData();
-        formData.append("file", coverFile);
-        const res = await uploadClubAsset(formData, "banners");
-        if (res.success) bannerUrl = res.mediaUrl;
-      }
+      const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+      const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
       const res = await createSuperAdminClub({
         name,
-        slug,
-        primaryColor,
-        secondaryColor,
-        logoUrl,
-        bannerUrl
+        email,
+        password
       });
 
       if (res.success) {
         setIsModalOpen(false);
+        form.reset();
         router.refresh();
       } else {
         alert(res.error || "Failed to create club");
@@ -81,7 +57,19 @@ export default function ClubsClient({ initialClubs }: { initialClubs: any[] }) {
     if (res.success) {
       router.refresh();
     }
-  }
+  };
+
+  const handleDeleteClub = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this club and all its associated admin accounts?")) {
+      return;
+    }
+    const res = await deleteClubAction(id);
+    if (res.success) {
+      router.refresh();
+    } else {
+      alert(res.error || "Failed to delete club");
+    }
+  };
 
   return (
     <>
@@ -168,7 +156,7 @@ export default function ClubsClient({ initialClubs }: { initialClubs: any[] }) {
                         <button className="w-full px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 text-left transition-colors" onClick={() => handleToggleStatus(club.id, club.status)}>
                           {club.status === "ACTIVE" ? "Suspend" : "Activate"}
                         </button>
-                        <button className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left transition-colors">Delete</button>
+                        <button className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left transition-colors font-medium" onClick={() => handleDeleteClub(club.id)}>Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -200,35 +188,15 @@ export default function ClubsClient({ initialClubs }: { initialClubs: any[] }) {
             <form onSubmit={handleCreateClub} className="flex-1 flex flex-col p-6 space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Club Name</label>
-                <input required name="name" type="text" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Manchester City" />
+                <input required name="name" type="text" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Raja CA" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Slug / URL Identifier</label>
-                <input required name="slug" type="text" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. man-city" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Club Admin Email</label>
+                <input required name="email" type="email" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. admin@raja.ma" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo Image</label>
-                <input type="file" accept="image/*" name="logoFile" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
-                <input type="file" accept="image/*" name="coverFile" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
-                  <div className="flex gap-2">
-                    <input required name="primaryColor" type="color" defaultValue="#2563EB" className="h-10 w-10 border border-gray-300 rounded-md cursor-pointer shrink-0" />
-                    <input type="text" defaultValue="#2563EB" className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Color</label>
-                  <div className="flex gap-2">
-                    <input name="secondaryColor" type="color" defaultValue="#111827" className="h-10 w-10 border border-gray-300 rounded-md cursor-pointer shrink-0" />
-                    <input type="text" defaultValue="#111827" className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  </div>
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Club Admin Password</label>
+                <input required name="password" type="password" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
               </div>
               
               <div className="mt-8 pt-6 border-t border-gray-200">

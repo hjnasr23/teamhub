@@ -204,9 +204,9 @@ export default function DashboardLayout({
             {isAdmin && adminClubSlug && (
               <Link
                 href={`/admin/${adminClubSlug}?lang=${langKey}`}
-                className="hidden items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50 md:flex"
+                className="hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 text-text-muted hover:text-text-dark md:flex"
               >
-                <Trophy className="h-4 w-4" />
+                <Trophy className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                 {t.adminDashboard}
               </Link>
             )}

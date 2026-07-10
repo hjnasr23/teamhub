@@ -38,7 +38,6 @@ export default async function SuperAdminDashboard() {
   ]);
 
   const totalRevenue = aggregateRevenue._sum.amount || 0;
-  const platformGrowth = 15; // Mock growth stat
 
   return (
     <>

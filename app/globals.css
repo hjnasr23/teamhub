@@ -60,11 +60,11 @@ body {
 
 /* Force Autofill inputs to always stay dark themed regardless of browser settings */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: #ffffff !important;
-    transition: background-color 9999s ease-in-out 0s !important;
-    box-shadow: inset 0 0 0 50px #111a2e !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 9999s ease-in-out 0s !important;
+  box-shadow: inset 0 0 0 50px #111a2e !important;
 }

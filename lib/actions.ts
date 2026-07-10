@@ -89,6 +89,7 @@ export async function loginAction(
         firstName: user.firstName ?? "",
         lastName: user.lastName ?? "",
         clubSlug: user.managedClub?.slug ?? null,
+        clubId: user.clubId ?? null,
       }),
       {
         httpOnly: true,
