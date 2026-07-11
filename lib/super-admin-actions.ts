@@ -23,24 +23,24 @@ export async function createSuperAdminClub(data: {
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const club = await prisma.$transaction(async (tx) => {
-      // 1. Create the club
+      // 1. Create the associated CLUB_ADMIN user first
+      const createdUser = await tx.user.create({
+        data: {
+          email: data.email,
+          password: hashedPassword,
+          role: "CLUB_ADMIN",
+        }
+      });
+
+      // 2. Create the club linked to this user
       const createdClub = await tx.club.create({
         data: {
           name: data.name,
           slug,
           city: "Unknown", // Default city
           status: "ACTIVE",
-        }
-      });
-
-      // 2. Create the associated CLUB_ADMIN user
-      await tx.user.create({
-        data: {
-          email: data.email,
-          password: hashedPassword,
-          role: "CLUB_ADMIN",
-          clubId: createdClub.id,
-        }
+          adminId: createdUser.id,
+        } as any
       });
 
       return createdClub;
@@ -58,16 +58,20 @@ export async function createSuperAdminClub(data: {
 
 export async function deleteClubAction(clubId: string) {
   try {
-    await prisma.$transaction([
-      // Delete associated users who are admins of this club
-      prisma.user.deleteMany({
-        where: { clubId }
-      }),
-      // Delete the club itself
-      prisma.club.delete({
+    const club = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: { adminId: true } as any
+    }) as any;
+
+    if (club?.adminId) {
+      await prisma.user.delete({
+        where: { id: club.adminId }
+      });
+    } else {
+      await prisma.club.delete({
         where: { id: clubId }
-      })
-    ]);
+      });
+    }
 
     revalidatePath('/admin-gen/clubs');
     revalidatePath('/admin-gen');
@@ -95,20 +99,16 @@ export async function toggleClubStatus(clubId: string, currentStatus: string) {
 
 export async function getPlatformSettings() {
   try {
-    let settings = await prisma.platformSetting.findUnique({
-      where: { id: "global" }
+    const settings = await prisma.platformSetting.upsert({
+      where: { id: "global" },
+      update: {},
+      create: {
+        id: "global",
+        commissionRate: 0.10,
+        stripeLiveMode: false,
+        cmiLiveMode: false
+      }
     });
-    
-    if (!settings) {
-      settings = await prisma.platformSetting.create({
-        data: {
-          id: "global",
-          commissionRate: 0.10,
-          stripeLiveMode: false,
-          cmiLiveMode: false
-        }
-      });
-    }
     
     return settings;
   } catch (err) {

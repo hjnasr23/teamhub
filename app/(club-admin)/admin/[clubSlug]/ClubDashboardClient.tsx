@@ -154,36 +154,42 @@ export default function ClubDashboardClient({
       {/* Title block */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">
             {clubName} Dashboard
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mt-1">
             Manage your fan community, content feeds, and direct earnings.
           </p>
         </div>
         
         {/* Tab Controls */}
-        <div className="flex bg-slate-900 border border-slate-800 p-1 rounded-xl w-fit">
+        <div className="flex bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-lg w-fit transition-colors">
           <button 
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
-              activeTab === "overview" ? "bg-blue-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold tracking-wide uppercase transition-all cursor-pointer ${
+              activeTab === "overview" 
+                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-700/50" 
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
             Overview
           </button>
           <button 
             onClick={() => setActiveTab("posts")}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
-              activeTab === "posts" ? "bg-blue-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold tracking-wide uppercase transition-all cursor-pointer ${
+              activeTab === "posts" 
+                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-700/50" 
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
             Posts CMS
           </button>
           <button 
             onClick={() => setActiveTab("payouts")}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
-              activeTab === "payouts" ? "bg-blue-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold tracking-wide uppercase transition-all cursor-pointer ${
+              activeTab === "payouts" 
+                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/50 dark:border-slate-700/50" 
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
             Payouts
@@ -193,43 +199,43 @@ export default function ClubDashboardClient({
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden border border-slate-800/80 hover:border-slate-700/80 transition-colors flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Members</span>
-            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <Users className="h-4.5 w-4.5 text-blue-500" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Members</span>
+            <div className="p-2 bg-blue-50 dark:bg-blue-950/40 rounded-lg">
+              <Users className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
-          <div className="font-display text-3xl font-bold text-white mb-2">
-            {metrics.totalMembers > 0 ? metrics.totalMembers.toLocaleString() : "0 Members"}
+          <div className="font-display text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            {metrics.totalMembers.toLocaleString()}
           </div>
-          <div className="text-xs text-slate-500 font-medium">All active subscriptions</div>
+          <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">All active subscriptions</div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden border border-slate-800/80 hover:border-slate-700/80 transition-colors flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Premium Members</span>
-            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <UserCheck className="h-4.5 w-4.5 text-emerald-500" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Premium Members</span>
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg">
+              <UserCheck className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
-          <div className="font-display text-3xl font-bold text-white mb-2">
-            {metrics.premiumMembers > 0 ? `${metrics.premiumMembers.toLocaleString()}` : "No premium subscribers yet"}
+          <div className="font-display text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            {metrics.premiumMembers.toLocaleString()}
           </div>
-          <div className="text-xs text-slate-500 font-medium">Paying tier members</div>
+          <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">Paying tier members</div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden border border-slate-800/80 hover:border-slate-700/80 transition-colors flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gross Revenue</span>
-            <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-              <Landmark className="h-4.5 w-4.5 text-indigo-500" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Revenue</span>
+            <div className="p-2 bg-orange-50 dark:bg-orange-950/40 rounded-lg">
+              <Landmark className="h-4.5 w-4.5 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
-          <div className="font-display text-3xl font-bold text-white mb-2">
-            {metrics.grossRevenue > 0 ? `${metrics.grossRevenue.toLocaleString()} MAD` : "0 MAD"}
+          <div className="font-display text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            {metrics.grossRevenue.toLocaleString()} MAD
           </div>
-          <div className="text-xs text-slate-500 font-medium">Direct billing gross volume</div>
+          <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">Direct billing gross volume</div>
         </div>
       </div>
 
@@ -237,15 +243,15 @@ export default function ClubDashboardClient({
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Content */}
-          <div className="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800/80">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-lg font-bold text-white flex items-center gap-2">
+              <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-blue-500" />
                 Recent Posts
               </h2>
               <button 
                 onClick={() => setActiveTab("posts")} 
-                className="text-xs text-blue-500 hover:text-blue-400 font-semibold bg-blue-500/10 px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
               >
                 Manage Posts
               </button>
@@ -256,7 +262,7 @@ export default function ClubDashboardClient({
                 recentPosts.slice(0, 5).map((post) => (
                   <div
                     key={post.id}
-                    className="flex items-center justify-between p-4 bg-slate-900/30 hover:bg-slate-900/60 border border-slate-850 rounded-xl transition-all"
+                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 border border-slate-200 dark:border-slate-850 rounded-xl transition-all"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`h-10 w-10 shrink-0 border rounded-lg flex items-center justify-center text-xs font-semibold ${
@@ -271,7 +277,7 @@ export default function ClubDashboardClient({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-sm font-semibold text-white truncate max-w-md">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate max-w-md">
                           {post.title}
                         </h3>
                         <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
@@ -286,7 +292,7 @@ export default function ClubDashboardClient({
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
                   No posts published yet.
                 </div>
               )}
@@ -294,9 +300,9 @@ export default function ClubDashboardClient({
           </div>
 
           {/* Latest Subscribers */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800/80">
-            <h2 className="font-display text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-emerald-500" />
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+            <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               Latest Subscribers
             </h2>
 
@@ -313,13 +319,13 @@ export default function ClubDashboardClient({
                           {subName.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <h4 className="text-xs font-semibold text-white truncate max-w-[120px]">{subName}</h4>
+                          <h4 className="text-xs font-semibold text-slate-900 dark:text-white truncate max-w-[120px]">{subName}</h4>
                           <span className="text-[10px] text-slate-500 block truncate max-w-[120px]">{sub.user.email}</span>
                         </div>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
                           {sub.amount} MAD/mo
                         </span>
                         <span className="text-[10px] text-slate-500 block mt-1">
@@ -330,7 +336,7 @@ export default function ClubDashboardClient({
                   );
                 })
               ) : (
-                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
                   No subscribers yet.
                 </div>
               )}
@@ -342,39 +348,39 @@ export default function ClubDashboardClient({
       {activeTab === "posts" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Post Creation CMS Form */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800/80">
-            <h2 className="font-display text-lg font-bold text-white mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+            <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <Plus className="h-5 w-5 text-blue-500" />
               Publish New Update
             </h2>
             <form onSubmit={handleCreatePost} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Title</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Title</label>
                 <input 
                   required 
                   name="title" 
                   type="text" 
                   placeholder="e.g., Matchday Lineups Confirmed" 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-850 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500" 
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Content</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Content</label>
                 <textarea 
                   required 
                   name="content" 
                   rows={4} 
                   placeholder="What's happening behind closed doors?" 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-850 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500" 
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Visibility Level</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Visibility Level</label>
                 <select 
                   name="visibility" 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-850 rounded-xl text-slate-300 text-xs focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-350 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 >
                   <option value="PUBLIC">Public (All Users)</option>
                   <option value="PREMIUM">Premium (Paid Supporters Only)</option>
@@ -382,19 +388,19 @@ export default function ClubDashboardClient({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Media Attachment (Optional)</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Media Attachment (Optional)</label>
                 <input 
                   type="file" 
                   name="mediaFile" 
                   accept="image/*,video/*" 
-                  className="w-full text-slate-300 text-xs" 
+                  className="w-full text-slate-600 dark:text-slate-300 text-xs" 
                 />
               </div>
 
               <button 
                 type="submit" 
                 disabled={isSubmitting} 
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold tracking-wide uppercase shadow-md transition-colors"
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold tracking-wide uppercase shadow-md transition-colors cursor-pointer"
               >
                 {isSubmitting ? "Publishing..." : "Publish Post"}
               </button>
@@ -402,13 +408,13 @@ export default function ClubDashboardClient({
           </div>
 
           {/* Posts list */}
-          <div className="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800/80">
-            <h2 className="font-display text-lg font-bold text-white mb-6">Published Posts CMS</h2>
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+            <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-6">Published Posts CMS</h2>
             
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
               {recentPosts.length > 0 ? (
                 recentPosts.map((post) => (
-                  <div key={post.id} className="p-4 bg-slate-900/30 border border-slate-850 rounded-xl flex items-start gap-4">
+                  <div key={post.id} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl flex items-start gap-4 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition-all">
                     <div className={`h-10 w-10 shrink-0 border rounded-lg flex items-center justify-center text-xs font-semibold ${
                       post.visibility === "PREMIUM" 
                         ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
@@ -419,19 +425,19 @@ export default function ClubDashboardClient({
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-4">
-                        <h4 className="text-sm font-semibold text-white truncate">{post.title}</h4>
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{post.title}</h4>
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                           post.visibility === "PREMIUM" 
-                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20" 
-                            : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                            ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
+                            : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                         }`}>
                           {post.visibility}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">{post.content}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{post.content}</p>
                       
                       {post.mediaUrl && (
-                        <div className="mt-2 text-[10px] text-blue-400 underline truncate">
+                        <div className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 underline truncate">
                           <a href={post.mediaUrl} target="_blank" rel="noopener noreferrer">View Attachment</a>
                         </div>
                       )}
@@ -443,7 +449,7 @@ export default function ClubDashboardClient({
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
                   No posts published yet.
                 </div>
               )}
@@ -455,44 +461,44 @@ export default function ClubDashboardClient({
       {activeTab === "payouts" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Financial summary & Request form */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800/80">
-            <h2 className="font-display text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-emerald-400" />
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+            <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-emerald-500" />
               Request Withdrawal
             </h2>
             
             <div className="space-y-4 mb-6">
-              <div className="flex justify-between border-b border-slate-850 pb-2 text-xs">
-                <span className="text-slate-400">Total Gross Income</span>
-                <span className="font-semibold text-white">{grossRev.toLocaleString()} MAD</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-slate-850 pb-2 text-xs">
+                <span className="text-slate-500 dark:text-slate-400">Total Gross Income</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{grossRev.toLocaleString()} MAD</span>
               </div>
-              <div className="flex justify-between border-b border-slate-850 pb-2 text-xs">
-                <span className="text-slate-400">Platform Commission (10%)</span>
-                <span className="font-semibold text-rose-400">-{platformCut.toLocaleString()} MAD</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-slate-850 pb-2 text-xs">
+                <span className="text-slate-500 dark:text-slate-400">Platform Commission (10%)</span>
+                <span className="font-semibold text-rose-600 dark:text-rose-450">-{platformCut.toLocaleString()} MAD</span>
               </div>
-              <div className="flex justify-between border-b border-slate-850 pb-2 text-xs">
-                <span className="text-slate-400">Net Platform Earnings</span>
-                <span className="font-semibold text-emerald-400">{availableBal.toLocaleString()} MAD</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-slate-850 pb-2 text-xs">
+                <span className="text-slate-500 dark:text-slate-400">Net Platform Earnings</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-450">{availableBal.toLocaleString()} MAD</span>
               </div>
-              <div className="flex justify-between border-b border-slate-850 pb-2 text-xs">
-                <span className="text-slate-400">Withdrawn / Processing</span>
-                <span className="font-semibold text-slate-300">-{totalWithdrawn.toLocaleString()} MAD</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-slate-850 pb-2 text-xs">
+                <span className="text-slate-500 dark:text-slate-400">Withdrawn / Processing</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">-{totalWithdrawn.toLocaleString()} MAD</span>
               </div>
-              <div className="flex justify-between border-b border-slate-850 pb-2 text-xs">
-                <span className="text-slate-400">Pending Approvals</span>
-                <span className="font-semibold text-amber-500">-{pendingWithdrawals.toLocaleString()} MAD</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-slate-850 pb-2 text-xs">
+                <span className="text-slate-500 dark:text-slate-400">Pending Approvals</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-500">-{pendingWithdrawals.toLocaleString()} MAD</span>
               </div>
               <div className="flex justify-between pt-2 text-sm font-bold">
-                <span className="text-white">Available Balance</span>
-                <span className="text-blue-400">{remainingBal.toLocaleString()} MAD</span>
+                <span className="text-slate-900 dark:text-white">Available Balance</span>
+                <span className="text-blue-600 dark:text-blue-400">{remainingBal.toLocaleString()} MAD</span>
               </div>
             </div>
 
             <form onSubmit={handleRequestPayout} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Withdrawal Amount</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Withdrawal Amount</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold">MAD</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-600 text-xs font-bold">MAD</span>
                   <input 
                     required 
                     name="amount" 
@@ -501,7 +507,7 @@ export default function ClubDashboardClient({
                     onChange={(e) => setPayoutAmount(e.target.value)}
                     max={remainingBal}
                     placeholder="Enter amount to withdraw" 
-                    className="w-full pl-12 pr-4 py-3 bg-slate-900 border border-slate-850 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500" 
+                    className="w-full pl-12 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                   />
                 </div>
               </div>
@@ -509,7 +515,7 @@ export default function ClubDashboardClient({
               <button 
                 type="submit" 
                 disabled={isSubmitting || remainingBal <= 0} 
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold tracking-wide uppercase shadow-md transition-colors"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold tracking-wide uppercase shadow-md transition-colors cursor-pointer"
               >
                 {isSubmitting ? "Requesting..." : "Request Payout Withdrawal"}
               </button>
@@ -517,15 +523,15 @@ export default function ClubDashboardClient({
           </div>
 
           {/* Payout log */}
-          <div className="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800/80">
-            <h2 className="font-display text-lg font-bold text-white mb-6">Payout Request History</h2>
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+            <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-6">Payout Request History</h2>
             
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
               {payoutRequests.length > 0 ? (
                 payoutRequests.map((payout) => (
-                  <div key={payout.id} className="p-4 bg-slate-900/30 border border-slate-850 rounded-xl flex items-center justify-between">
+                  <div key={payout.id} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl flex items-center justify-between hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition-all">
                     <div>
-                      <h4 className="text-sm font-semibold text-white">{payout.amount.toLocaleString()} MAD</h4>
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{payout.amount.toLocaleString()} MAD</h4>
                       <span className="text-[10px] text-slate-500 block mt-1">
                         Requested {new Date(payout.createdAt).toLocaleDateString()}
                       </span>
@@ -533,17 +539,17 @@ export default function ClubDashboardClient({
 
                     <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                       payout.status === "APPROVED" 
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" 
                         : payout.status === "PROCESSING" 
-                        ? "bg-blue-500/10 text-blue-400 border-blue-500/20" 
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" 
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                     }`}>
                       {payout.status}
                     </span>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                <div className="text-center py-8 text-sm text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
                   No payout history registered yet.
                 </div>
               )}

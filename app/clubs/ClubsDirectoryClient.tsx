@@ -64,6 +64,8 @@ interface Club {
   primaryColor: string;
   secondaryColor: string;
   logoInitials: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
 }
 
 function ClubsDirectoryClientContent({ clubs }: { clubs: Club[] }) {
@@ -157,9 +159,9 @@ function ClubsDirectoryClientContent({ clubs }: { clubs: Club[] }) {
                         className="flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm overflow-hidden bg-slate-200"
                         style={{ backgroundColor: club.primaryColor }}
                       >
-                        {isValidUrl((club as any).logoUrl) ? (
+                        {isValidUrl(club.logoUrl) ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={(club as any).logoUrl} alt={club.name} className="h-full w-full object-cover" />
+                          <img src={club.logoUrl!} alt={club.name} className="h-full w-full object-cover" />
                         ) : (
                           <Shield className="h-5 w-5 text-white" />
                         )}

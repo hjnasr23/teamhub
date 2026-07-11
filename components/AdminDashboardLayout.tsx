@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
   LayoutDashboard,
   Users,
@@ -31,7 +32,7 @@ export default function AdminDashboardLayout({
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <div className="flex h-screen bg-slate-50 text-gray-900 font-sans overflow-hidden">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 font-sans overflow-hidden transition-colors duration-300">
       {/* Mobile Drawer Overlay */}
       {mobileMenuOpen && (
         <div
@@ -42,18 +43,20 @@ export default function AdminDashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
           mobileMenuOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"
         }`}
       >
         {/* Brand/Logo */}
-        <div className="h-16 flex shrink-0 items-center justify-between px-6 border-b border-gray-200">
-          <div className="flex items-center gap-2 text-blue-600">
+        <div className="h-16 flex shrink-0 items-center justify-between px-6 border-b border-gray-200 dark:border-slate-800">
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
             <ShieldCheck className="h-8 w-8" />
-            <span className="text-xl font-bold tracking-tight">TEAMHUB</span>
+            <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+              TEAM<span className="text-blue-600 dark:text-blue-400">HUB</span>
+            </span>
           </div>
           <button
-            className="md:hidden p-1 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            className="md:hidden p-1 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md transition-colors"
             onClick={closeMenu}
           >
             <X className="h-6 w-6" />
@@ -66,7 +69,9 @@ export default function AdminDashboardLayout({
             href="/admin-gen"
             onClick={closeMenu}
             className={`flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-colors ${
-              pathname === "/admin-gen" ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              pathname === "/admin-gen"
+                ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200"
             }`}
           >
             <LayoutDashboard className="h-5 w-5 shrink-0" />
@@ -76,7 +81,9 @@ export default function AdminDashboardLayout({
             href="/admin-gen/clubs"
             onClick={closeMenu}
             className={`flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-colors ${
-              pathname.includes("/admin-gen/clubs") ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              pathname.includes("/admin-gen/clubs")
+                ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200"
             }`}
           >
             <Building2 className="h-5 w-5 shrink-0" />
@@ -86,7 +93,9 @@ export default function AdminDashboardLayout({
             href="/admin-gen/subscribers"
             onClick={closeMenu}
             className={`flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-colors ${
-              pathname.includes("/admin-gen/subscribers") ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              pathname.includes("/admin-gen/subscribers")
+                ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200"
             }`}
           >
             <Users className="h-5 w-5 shrink-0" />
@@ -96,7 +105,9 @@ export default function AdminDashboardLayout({
             href="/admin-gen/financials"
             onClick={closeMenu}
             className={`flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-colors ${
-              pathname.includes("/admin-gen/financials") ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              pathname.includes("/admin-gen/financials")
+                ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200"
             }`}
           >
             <CircleDollarSign className="h-5 w-5 shrink-0" />
@@ -106,7 +117,9 @@ export default function AdminDashboardLayout({
             href="/admin-gen/settings"
             onClick={closeMenu}
             className={`flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-colors ${
-              pathname.includes("/admin-gen/settings") ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              pathname.includes("/admin-gen/settings")
+                ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200"
             }`}
           >
             <Settings className="h-5 w-5 shrink-0" />
@@ -115,10 +128,10 @@ export default function AdminDashboardLayout({
         </nav>
 
         {/* User / Logout */}
-        <div className="p-4 border-t border-gray-200 shrink-0">
+        <div className="p-4 border-t border-gray-200 dark:border-slate-800 shrink-0">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-gray-500 hover:bg-red-50 hover:text-red-600 font-medium transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors"
           >
             <LogOut className="h-5 w-5 shrink-0" />
             Logout
@@ -129,44 +142,29 @@ export default function AdminDashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden w-full relative">
         {/* Top Navbar */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 z-10 shrink-0">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 z-10 shrink-0 transition-colors duration-300">
           <div className="flex items-center gap-4">
             <button
-              className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md transition-colors"
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="h-6 w-6" />
             </button>
             <div className="hidden sm:flex items-center w-48 md:w-64 lg:w-96 relative">
-              <Search className="h-5 w-5 absolute left-3 text-gray-400" />
+              <Search className="h-5 w-5 absolute left-3 text-gray-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search clubs, users..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-slate-850 rounded-md bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
               />
             </div>
-            <button className="sm:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors">
+            <button className="sm:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md transition-colors">
               <Search className="h-5 w-5" />
             </button>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-6">
-            <button className="relative p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors">
-              <Bell className="h-5 w-5 md:h-6 md:w-6" />
-              <span className="absolute top-1.5 right-1.5 md:top-2 md:right-2 h-2 w-2 md:h-2.5 md:w-2.5 bg-orange-500 rounded-full border-2 border-white"></span>
-            </button>
-            <div className="flex items-center gap-3 border-l border-gray-200 pl-3 md:pl-6">
-              <div className="text-right hidden md:block">
-                <p className="text-sm font-medium text-gray-900">
-                  {session.firstName} {session.lastName}
-                </p>
-                <p className="text-xs text-gray-500">Super Administrator</p>
-              </div>
-              <div className="h-8 w-8 md:h-10 md:w-10 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm md:text-base">
-                {session.firstName?.charAt(0) || "S"}
-                {session.lastName?.charAt(0) || "A"}
-              </div>
-            </div>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
           </div>
         </header>
 

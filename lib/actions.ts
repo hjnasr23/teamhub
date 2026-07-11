@@ -25,6 +25,8 @@ export async function getSession(): Promise<{
   email: string;
   firstName: string;
   lastName: string;
+  clubSlug?: string | null;
+  clubId?: string | null;
 } | null> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("auth_session");
@@ -89,7 +91,7 @@ export async function loginAction(
         firstName: user.firstName ?? "",
         lastName: user.lastName ?? "",
         clubSlug: user.managedClub?.slug ?? null,
-        clubId: user.clubId ?? null,
+        clubId: user.managedClub?.id ?? null,
       }),
       {
         httpOnly: true,
@@ -291,24 +293,24 @@ export async function createTenantAction(formData: FormData): Promise<ActionResp
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     const result = await prisma.$transaction(async (tx) => {
-      const club = await tx.club.create({
-        data: {
-          name: clubName,
-          slug: clubSlug,
-          city: clubCity,
-          logoUrl: "",
-        }
-      });
-
-      await tx.user.create({
+      const createdUser = await tx.user.create({
         data: {
           email: adminEmail,
           password: hashedPassword,
           firstName: adminFirstName,
           lastName: adminLastName,
           role: "CLUB_ADMIN",
-          clubId: club.id,
         }
+      });
+
+      const club = await tx.club.create({
+        data: {
+          name: clubName,
+          slug: clubSlug,
+          city: clubCity,
+          logoUrl: "",
+          adminId: createdUser.id,
+        } as any
       });
 
       return { clubId: club.id };
@@ -357,23 +359,24 @@ export async function registerAction(formData: FormData): Promise<ActionResponse
       }
 
       await prisma.$transaction(async (tx) => {
-        const newClub = await tx.club.create({
-          data: {
-            name: clubName,
-            slug,
-            city: "Unknown",
-            logoUrl: "",
-          }
-        });
-        await tx.user.create({
+        const createdUser = await tx.user.create({
           data: {
             email,
             password: hashedPassword,
             firstName,
             lastName,
             role: "CLUB_ADMIN",
-            clubId: newClub.id
           }
+        });
+
+        await tx.club.create({
+          data: {
+            name: clubName,
+            slug,
+            city: "Unknown",
+            logoUrl: "",
+            adminId: createdUser.id,
+          } as any
         });
       });
     } else {
@@ -503,6 +506,168 @@ export async function cancelSubscriptionAction(formData: FormData): Promise<Acti
     return { success: true, data: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to cancel subscription.";
+    return { success: false, error: message };
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ *  Create Subscription
+ * ════════════════════════════════════════════════════════════════════ */
+
+export async function createSubscriptionAction(
+  clubSlug: string,
+  amount: number
+): Promise<ActionResponse<boolean>> {
+  const session = await getSession();
+
+  if (!session || session.role !== "FAN") {
+    return { success: false, error: "You must be logged in as a Fan to subscribe." };
+  }
+
+  try {
+    const club = await prisma.club.findUnique({
+      where: { slug: clubSlug },
+    });
+
+    if (!club) {
+      return { success: false, error: "Club not found." };
+    }
+
+    // Check if there is an existing ACTIVE subscription
+    const existing = await prisma.subscription.findFirst({
+      where: {
+        fanId: session.userId,
+        clubId: club.id,
+        status: "ACTIVE",
+      },
+    });
+
+    if (existing) {
+      return { success: true, data: true };
+    }
+
+    // Check if there is a CANCELLED subscription to reactivate
+    const cancelled = await prisma.subscription.findFirst({
+      where: {
+        fanId: session.userId,
+        clubId: club.id,
+        status: "CANCELLED",
+      },
+    });
+
+    if (cancelled) {
+      await prisma.subscription.update({
+        where: { id: cancelled.id },
+        data: {
+          status: "ACTIVE",
+          amount: amount,
+          createdAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.subscription.create({
+        data: {
+          fanId: session.userId,
+          clubId: club.id,
+          status: "ACTIVE",
+          amount: amount,
+        },
+      });
+    }
+
+    // Increment club subscribers count
+    await prisma.club.update({
+      where: { id: club.id },
+      data: {
+        subscribersCount: {
+          increment: 1,
+        },
+      },
+    });
+
+    return { success: true, data: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create subscription.";
+    return { success: false, error: message };
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ *  Follow Club (Free Subscription)
+ * ════════════════════════════════════════════════════════════════════ */
+
+export async function followClubAction(
+  clubSlug: string
+): Promise<ActionResponse<boolean>> {
+  const session = await getSession();
+
+  if (!session || session.role !== "FAN") {
+    return { success: false, error: "You must be logged in as a Fan to follow." };
+  }
+
+  try {
+    const club = await prisma.club.findUnique({
+      where: { slug: clubSlug },
+    });
+
+    if (!club) {
+      return { success: false, error: "Club not found." };
+    }
+
+    // Check if there is any active subscription
+    const existing = await prisma.subscription.findFirst({
+      where: {
+        fanId: session.userId,
+        clubId: club.id,
+        status: "ACTIVE",
+      },
+    });
+
+    if (existing) {
+      return { success: true, data: true };
+    }
+
+    const cancelled = await prisma.subscription.findFirst({
+      where: {
+        fanId: session.userId,
+        clubId: club.id,
+        status: "CANCELLED",
+      },
+    });
+
+    if (cancelled) {
+      await prisma.subscription.update({
+        where: { id: cancelled.id },
+        data: {
+          status: "ACTIVE",
+          amount: 0,
+          createdAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.subscription.create({
+        data: {
+          fanId: session.userId,
+          clubId: club.id,
+          status: "ACTIVE",
+          amount: 0,
+        },
+      });
+    }
+
+    // Increment club subscribers count
+    await prisma.club.update({
+      where: { id: club.id },
+      data: {
+        subscribersCount: {
+          increment: 1,
+        },
+      },
+    });
+
+    return { success: true, data: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to follow club.";
     return { success: false, error: message };
   }
 }

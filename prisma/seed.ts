@@ -50,6 +50,12 @@ async function main() {
         },
     })
 
+    // Link rca club to adminUser
+    await prisma.club.update({
+        where: { id: rca.id },
+        data: { adminId: adminUser.id } as any
+    })
+
     const fanUser = await prisma.user.create({
         data: {
             email: 'fan@teamhub.ma',

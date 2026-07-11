@@ -5,6 +5,20 @@ const nextConfig: any = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  async redirects() {
+    return [
+      {
+        source: '/portal/:slug*',
+        destination: '/clubs/:slug*',
+        permanent: true,
+      },
+      {
+        source: '/club/:slug*',
+        destination: '/clubs/:slug*',
+        permanent: true,
+      },
+    ];
   }
 };
 

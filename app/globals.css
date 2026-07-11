@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Hada kay-forcer Tailwind v4 y-qra s-switch dyal next-themes ila kan m-instali */
-@custom-variant dark (&:is(.dark *));
+@variant dark (&:is(.dark *));
 
 :root {
   /* L-Alwan l-asasiyya f-Light Mode (SaaS Premium) */

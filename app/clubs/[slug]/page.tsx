@@ -20,16 +20,32 @@ export default async function ClubPage({ params }: PageProps) {
   /* ── Check Fan Subscription State ───────────────────────────────── */
   const session = await getSession();
   let hasActiveSubscription = false;
+  let isFollowing = false;
+  let isAdmin = false;
   
   if (session && club) {
-    const activeSub = await prisma.subscription.findFirst({
-      where: {
-        fanId: session.userId,
-        clubId: club.id,
-        status: "ACTIVE"
+    const isSuperAdmin = session.role === "SUPER_ADMIN";
+    const isClubAdmin = session.role === "CLUB_ADMIN" && session.clubId === club.id;
+    
+    if (isSuperAdmin || isClubAdmin) {
+      hasActiveSubscription = true;
+      isFollowing = true;
+      isAdmin = true;
+    } else {
+      const activeSub = await prisma.subscription.findFirst({
+        where: {
+          fanId: session.userId,
+          clubId: club.id,
+          status: "ACTIVE"
+        }
+      });
+      if (activeSub) {
+        isFollowing = true;
+        if (activeSub.amount > 0) {
+          hasActiveSubscription = true;
+        }
       }
-    });
-    if (activeSub) hasActiveSubscription = true;
+    }
   }
 
   // Sanitize the Prisma results to prevent serialization issues
@@ -58,7 +74,10 @@ export default async function ClubPage({ params }: PageProps) {
     <ClubPageClient 
       club={sanitizedClub as any} 
       hasActiveSubscription={hasActiveSubscription} 
+      isFollowing={isFollowing}
       slug={slug} 
+      isAdmin={isAdmin}
+      isGuest={!session}
     />
   );
 }

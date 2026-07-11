@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 import { logoutAction } from "@/lib/actions";
+import { signOut } from "next-auth/react";
 import {
   Home,
   CreditCard,
@@ -100,9 +101,7 @@ export default function DashboardLayout({
 
   const handleLogout = () => {
     startTransition(async () => {
-      await logoutAction();
-      router.refresh();
-      router.push("/");
+      await signOut({ callbackUrl: "/" });
     });
   };
 
@@ -143,16 +142,20 @@ export default function DashboardLayout({
   }
 
   return (
-    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-neutral-bg-alt text-text-dark transition-colors duration-300">
+    <div dir={isRTL ? "rtl" : "ltr"} className={`min-h-screen text-text-dark transition-colors duration-300 ${pathname.startsWith("/clubs/") ? "bg-transparent" : "bg-neutral-bg-alt"}`}>
       {/* ═══════════════════════════════════════════════════════════ */}
       {/*  TOP NAVIGATION BAR                                       */}
       {/* ═══════════════════════════════════════════════════════════ */}
       <header
-        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-in-out ${
-          isScrolled
-            ? "w-[85%] max-w-5xl px-4 py-2 bg-neutral-bg/80 backdrop-blur-md border border-border-custom rounded-2xl shadow-lg"
-            : "w-[95%] max-w-7xl px-6 py-4 bg-transparent border-transparent"
-        }`}
+        className={
+          pathname.startsWith("/clubs/")
+            ? "w-full sticky top-0 left-0 right-0 z-50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md shadow-sm px-6 py-2 border-b border-slate-200/50 dark:border-slate-800/50 transition-all duration-300"
+            : `fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-in-out ${
+                isScrolled
+                  ? "w-[85%] max-w-5xl px-4 py-2 bg-neutral-bg/80 backdrop-blur-md border border-border-custom rounded-2xl shadow-lg"
+                  : "w-[95%] max-w-7xl px-6 py-4 bg-transparent border-transparent"
+              }`
+        }
       >
         <div className="mx-auto flex h-16 w-full items-center justify-between">
           {/* ── Left: Logo ───────────────────────────────────────── */}
@@ -177,20 +180,32 @@ export default function DashboardLayout({
               {NAV_LINKS.map((link) => {
                 const active = isActive(link.href);
                 const label = link.href === "/clubs" ? t.discover : link.label;
+                const linkClass = pathname.startsWith("/clubs/")
+                  ? `${
+                      active
+                        ? "text-blue-600 dark:text-blue-400 font-semibold"
+                        : "text-slate-900 dark:text-slate-100 font-medium hover:text-blue-600 dark:hover:text-blue-400"
+                    }`
+                  : `${
+                      active
+                        ? "text-text-dark"
+                        : "text-text-muted hover:text-text-dark"
+                    }`;
+
                 return (
                   <Link
                     key={link.href}
                     href={`${link.href}?lang=${langKey}`}
-                    className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                      active
-                        ? "text-text-dark"
-                        : "text-text-muted hover:text-text-dark"
-                    }`}
+                    className={`relative rounded-lg px-3 py-2 text-sm transition-colors duration-200 ${linkClass}`}
                   >
                     {label}
                     {/* Active indicator — thin bottom bar */}
                     {active && (
-                      <span className="absolute inset-x-1 -bottom-[17px] h-[2px] rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                      <span className={`absolute inset-x-1 -bottom-[17px] h-[2px] rounded-full ${
+                        pathname.startsWith("/clubs/")
+                          ? "bg-blue-600 dark:bg-blue-400"
+                          : "bg-emerald-600 dark:bg-emerald-400"
+                      }`} />
                     )}
                   </Link>
                 );
@@ -204,10 +219,18 @@ export default function DashboardLayout({
             {isAdmin && adminClubSlug && (
               <Link
                 href={`/admin/${adminClubSlug}?lang=${langKey}`}
-                className="hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 text-text-muted hover:text-text-dark md:flex"
+                className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 hidden md:inline-block ${
+                  pathname.startsWith("/clubs/")
+                    ? "text-slate-900 dark:text-slate-100 font-medium hover:text-blue-600 dark:hover:text-blue-400"
+                    : pathname.startsWith("/admin")
+                    ? "text-text-dark"
+                    : "text-text-muted hover:text-text-dark"
+                }`}
               >
-                <Trophy className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                 {t.adminDashboard}
+                {pathname.startsWith("/admin") && (
+                  <span className="absolute inset-x-1 -bottom-[17px] h-[2px] rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                )}
               </Link>
             )}
 
@@ -215,16 +238,24 @@ export default function DashboardLayout({
               {LANGS.map((lang, i) => {
                 const switcherParams = new URLSearchParams(searchParams.toString());
                 switcherParams.set("lang", lang.toLowerCase());
+                const langClass = pathname.startsWith("/clubs/")
+                  ? `${
+                      currentLang === lang
+                        ? "text-blue-600 dark:text-blue-400 font-bold"
+                        : "text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400"
+                    }`
+                  : `${
+                      currentLang === lang
+                        ? "text-emerald-500 font-bold"
+                        : "text-text-muted hover:text-emerald-500"
+                    }`;
+
                 return (
                   <React.Fragment key={lang}>
                     {i > 0 && <span className="opacity-30 text-text-muted">|</span>}
                     <Link
                       href={`${pathname}?${switcherParams.toString()}`}
-                      className={`transition-colors duration-200 ${
-                        currentLang === lang
-                          ? "text-emerald-500 font-bold"
-                          : "text-text-muted hover:text-emerald-500"
-                      }`}
+                      className={`transition-colors duration-200 ${langClass}`}
                     >
                       {lang}
                     </Link>
@@ -249,13 +280,21 @@ export default function DashboardLayout({
               <div className="hidden md:flex items-center gap-2">
                 <Link
                   href={`/login?lang=${langKey}`}
-                  className="rounded-lg px-3 py-2 text-sm font-bold text-text-muted hover:text-text-dark transition-colors"
+                  className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
+                    pathname.startsWith("/clubs/")
+                      ? "text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400"
+                      : "text-text-muted hover:text-text-dark"
+                  }`}
                 >
                   {t.login}
                 </Link>
                 <Link
                   href={`/register?lang=${langKey}`}
-                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-emerald-600"
+                  className={`rounded-lg px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors ${
+                    pathname.startsWith("/clubs/")
+                      ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                      : "bg-emerald-500 hover:bg-emerald-600"
+                  }`}
                 >
                   {t.signUp}
                 </Link>
@@ -265,7 +304,11 @@ export default function DashboardLayout({
             {/* Mobile burger — only visible < md */}
             <button
               onClick={() => setMobileOpen(true)}
-              className="ml-1 rounded-lg p-2 text-text-muted transition-colors hover:bg-neutral-bg-alt hover:text-text-dark md:hidden"
+              className={`ml-1 rounded-lg p-2 transition-colors md:hidden ${
+                pathname.startsWith("/clubs/")
+                  ? "text-slate-900 dark:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                  : "text-text-muted hover:bg-neutral-bg-alt hover:text-text-dark"
+              }`}
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
@@ -375,7 +418,7 @@ export default function DashboardLayout({
       {/*  PAGE CONTENT — full width, no side offsets               */}
       {/* ═══════════════════════════════════════════════════════════ */}
       <main className="w-full">
-        {pathname.includes("/login") || pathname.includes("/register") || pathname.includes("/admin-gen") || pathname === "/" || pathname === "/ar" || pathname === "/fr" ? (
+        {pathname.includes("/login") || pathname.includes("/register") || pathname.includes("/admin-gen") || pathname.startsWith("/clubs/") || pathname === "/" || pathname === "/ar" || pathname === "/fr" ? (
           children
         ) : (
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">

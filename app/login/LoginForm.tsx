@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { signIn } from "next-auth/react";
@@ -56,11 +56,13 @@ interface LoginFormProps {
 
 export default function LoginForm({ lang }: LoginFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const t = dict[lang];
   const isRTL = lang === 'ar';
+  const callbackUrl = searchParams.get("callbackUrl");
 
   useEffect(() => {
     const checkActiveSession = async () => {
@@ -69,10 +71,10 @@ export default function LoginForm({ lang }: LoginFormProps) {
         if (session) {
           const role = session.role;
           const clubSlug = session.clubSlug;
-          let redirectPath = `/dashboard/fan?lang=${lang}`;
-          if (role === "SUPER_ADMIN") {
+          let redirectPath = callbackUrl || `/dashboard/fan?lang=${lang}`;
+          if (role === "SUPER_ADMIN" && !callbackUrl) {
             redirectPath = `/admin-gen?lang=${lang}`;
-          } else if (role === "CLUB_ADMIN" && clubSlug) {
+          } else if (role === "CLUB_ADMIN" && clubSlug && !callbackUrl) {
             redirectPath = `/admin/${clubSlug}?lang=${lang}`;
           }
           router.push(redirectPath);
@@ -83,7 +85,7 @@ export default function LoginForm({ lang }: LoginFormProps) {
       }
     };
     checkActiveSession();
-  }, [router, lang]);
+  }, [router, lang, callbackUrl]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -105,11 +107,11 @@ export default function LoginForm({ lang }: LoginFormProps) {
           const clubSlug = response.clubSlug;
           console.log("Login success:", { role, clubSlug });
           
-          let redirectPath = `/dashboard/fan?lang=${lang}`;
+          let redirectPath = callbackUrl || `/dashboard/fan?lang=${lang}`;
 
-          if (role === "SUPER_ADMIN") {
+          if (role === "SUPER_ADMIN" && !callbackUrl) {
             redirectPath = `/admin-gen?lang=${lang}`;
-          } else if (role === "CLUB_ADMIN" && clubSlug) {
+          } else if (role === "CLUB_ADMIN" && clubSlug && !callbackUrl) {
             redirectPath = `/admin/${clubSlug}?lang=${lang}`;
           }
 

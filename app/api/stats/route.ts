@@ -68,7 +68,7 @@ export async function GET() {
           clubsList: [],
         },
       },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }

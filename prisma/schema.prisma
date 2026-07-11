@@ -44,8 +44,7 @@ model User {
   role          Role           @default(FAN)
   createdAt     DateTime       @default(now())
   
-  clubId        String?
-  managedClub   Club?          @relation("AdminToClub", fields: [clubId], references: [id])
+  managedClub   Club?          @relation("AdminToClub")
   
   subscriptions Subscription[]
 }
@@ -64,7 +63,8 @@ model Club {
   status           ClubStatus     @default(ACTIVE)
   createdAt        DateTime       @default(now())
 
-  admins          User[]          @relation("AdminToClub")
+  adminId        String?        @unique
+  admin          User?          @relation("AdminToClub", fields: [adminId], references: [id], onDelete: Cascade)
   posts           Post[]
   subscriptions   Subscription[]
   payoutRequests  PayoutRequest[]
@@ -79,7 +79,7 @@ model Post {
   visibility  PostVisibility @default(PUBLIC)
   createdAt   DateTime       @default(now())
   clubId      String
-  club        Club           @relation(fields: [clubId], references: [id])
+  club        Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
 }
 
 model Subscription {

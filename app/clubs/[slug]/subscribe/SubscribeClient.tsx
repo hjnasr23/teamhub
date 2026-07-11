@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { ShieldCheck, CreditCard, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { createSubscriptionAction } from "@/lib/actions";
 
 interface SubscribeClientProps {
   clubName: string;
@@ -9,6 +11,7 @@ interface SubscribeClientProps {
   planName: string;
   price: number;
   billingCycle: string;
+  clubSlug: string;
 }
 
 export default function SubscribeClient({
@@ -17,7 +20,9 @@ export default function SubscribeClient({
   planName,
   price,
   billingCycle,
+  clubSlug,
 }: SubscribeClientProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"card" | "paypal">("card");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,16 +30,26 @@ export default function SubscribeClient({
   const taxAmount = price * 0.20; // Example 20% VAT
   const totalAmount = price + taxAmount;
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsProcessing(true);
 
-    // Simulate backend processing
-    setTimeout(() => {
+    try {
+      const res = await createSubscriptionAction(clubSlug, price);
+      if (!res.success) {
+        setError(res.error || "Failed to create subscription.");
+        setIsProcessing(false);
+        return;
+      }
       setIsProcessing(false);
       alert("Subscription activated successfully!");
-    }, 2500);
+      router.push(`/clubs/${clubSlug}`);
+      router.refresh();
+    } catch (err) {
+      setError("An unexpected error occurred during subscription processing.");
+      setIsProcessing(false);
+    }
   };
 
   return (

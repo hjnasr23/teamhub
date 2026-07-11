@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "clean-marketing": "powershell -Command \"Remove-Item -Recurse -Force 'app/(marketing)'\"",
-    "clear-db": "tsx prisma/clear.ts"
+    "clear-db": "tsx prisma/clear.ts",
+    "db-migrate": "prisma migrate dev --name add_cascade_delete_to_club_relations && prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",

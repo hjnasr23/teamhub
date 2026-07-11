@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { registerAction } from "@/lib/actions";
@@ -61,12 +61,16 @@ interface RegisterFormProps {
 
 export default function RegisterForm({ lang }: RegisterFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const t = dict[lang];
   const isRTL = lang === 'ar';
+
+  const callbackUrl = searchParams.get("callbackUrl");
+  const planId = searchParams.get("planId");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,8 +86,18 @@ export default function RegisterForm({ lang }: RegisterFormProps) {
 
       if (response.success) {
         setSuccessMsg(lang === 'ar' ? 'تم إنشاء الحساب بنجاح! جاري تحويلك...' : lang === 'fr' ? 'Compte créé avec succès! Redirection...' : 'Account created successfully! Redirecting...');
+        
+        let loginUrl = `/login?lang=${lang}`;
+        if (callbackUrl) {
+          let finalCallback = callbackUrl;
+          if (planId && !callbackUrl.includes("planId=")) {
+            finalCallback += `${callbackUrl.includes("?") ? "&" : "?"}planId=${planId}`;
+          }
+          loginUrl += `&callbackUrl=${encodeURIComponent(finalCallback)}`;
+        }
+        
         setTimeout(() => {
-          router.push(`/login?lang=${lang}`);
+          router.push(loginUrl);
         }, 1500);
       } else {
         setError(response.error || "Registration failed.");

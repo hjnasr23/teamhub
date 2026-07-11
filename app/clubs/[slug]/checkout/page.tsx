@@ -1,6 +1,7 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/actions";
 import CheckoutClient from "./CheckoutClient";
 
 interface PageProps {
@@ -10,10 +11,17 @@ interface PageProps {
 
 export default async function CheckoutPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+
+  // 1. Authenticate Fan Session
+  const session = await getSession();
+  if (!session) {
+    redirect(`/login?callbackUrl=/clubs/${slug}/checkout`);
+  }
+
   const resolvedSearchParams = await searchParams;
   const { planId } = resolvedSearchParams;
 
-  // 1. Fetch real club details from PostgreSQL via Prisma
+  // 2. Fetch real club details from PostgreSQL via Prisma
   const club = await prisma.club.findUnique({
     where: { slug }
   });
@@ -22,7 +30,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
     notFound();
   }
 
-  // 2. Dynamic Context Parsing (Determine what the Fan is buying)
+  // 3. Dynamic Context Parsing (Determine what the Fan is buying)
   let planName = "Supporter Membership";
   let price = 10;
   let billingCycle = "Month";
@@ -44,6 +52,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
       planName={planName}
       price={price}
       billingCycle={billingCycle}
+      clubSlug={slug}
     />
   );
 }

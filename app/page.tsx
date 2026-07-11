@@ -267,10 +267,10 @@ function MarketingPageContent() {
         if (!active) return;
 
         const targets = {
-          clubs: typeof res?.data?.clubs === "number" ? res.data.clubs : FALLBACKS.clubs,
-          supporters: typeof res?.data?.supporters === "number" ? res.data.supporters : FALLBACKS.supporters,
-          posts: typeof res?.data?.posts === "number" ? res.data.posts : FALLBACKS.posts,
-          revenue: typeof res?.data?.revenue === "number" ? res.data.revenue : FALLBACKS.revenue
+          clubs: typeof res?.data?.clubs === "number" ? res.data.clubs : (typeof res?.fallback?.clubs === "number" ? res.fallback.clubs : FALLBACKS.clubs),
+          supporters: typeof res?.data?.supporters === "number" ? res.data.supporters : (typeof res?.fallback?.supporters === "number" ? res.fallback.supporters : FALLBACKS.supporters),
+          posts: typeof res?.data?.posts === "number" ? res.data.posts : (typeof res?.fallback?.posts === "number" ? res.fallback.posts : FALLBACKS.posts),
+          revenue: typeof res?.data?.revenue === "number" ? res.data.revenue : (typeof res?.fallback?.revenue === "number" ? res.fallback.revenue : FALLBACKS.revenue)
         };
 
         if (res?.data?.clubsList) {
