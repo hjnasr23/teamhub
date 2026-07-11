@@ -31,6 +31,7 @@ export async function GET() {
       name: club.name,
       slug: club.slug,
       city: club.city,
+      logoUrl: club.logoUrl,
       subscribersCount: club.subscribersCount,
       primaryColor: club.primaryColor,
       secondaryColor: club.secondaryColor,

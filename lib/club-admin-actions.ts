@@ -160,8 +160,10 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
     const primaryColor = formData.get("primaryColor") as string | null;
     const secondaryColor = formData.get("secondaryColor") as string | null;
     const description = formData.get("description") as string | null;
+    const city = formData.get("city") as string | null;
+    const textLogoUrl = formData.get("logoUrl") as string | null;
 
-    let logoUrl = club.logoUrl;
+    let logoUrl = textLogoUrl || club.logoUrl;
     let bannerUrl = club.bannerUrl;
 
     if (logoFile && logoFile.size > 0 && logoFile.name !== "undefined") {
@@ -200,6 +202,7 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
         primaryColor: primaryColor !== null && primaryColor !== undefined ? primaryColor : undefined,
         secondaryColor: secondaryColor !== null && secondaryColor !== undefined ? secondaryColor : undefined,
         description: description !== null && description !== undefined ? description : undefined,
+        city: city !== null && city !== undefined ? city : undefined,
       },
     });
 

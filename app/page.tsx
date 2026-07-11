@@ -3,6 +3,7 @@
 import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Shield,
@@ -474,14 +475,30 @@ function MarketingPageContent() {
                     <div>
                       <div className="mb-4 flex items-center justify-between">
                         <div
-                          className="flex h-12 w-12 items-center justify-center rounded-xl border text-sm font-bold"
+                          className="flex h-12 w-12 items-center justify-center rounded-xl border text-sm font-bold overflow-hidden bg-slate-100 dark:bg-slate-800"
                           style={{
-                            color: club.primaryColor,
                             borderColor: club.primaryColor + "33",
-                            backgroundColor: club.primaryColor + "10",
                           }}
                         >
-                          {club.logoInitials}
+                          {club.logoUrl || club.logo ? (
+                            <Image
+                              src={club.logoUrl || club.logo}
+                              alt={`${club.name} logo`}
+                              width={48}
+                              height={48}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="flex h-full w-full items-center justify-center font-bold"
+                              style={{
+                                color: club.primaryColor,
+                                backgroundColor: club.primaryColor + "10",
+                              }}
+                            >
+                              {club.logoInitials}
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-muted">
                           <span
@@ -495,7 +512,7 @@ function MarketingPageContent() {
                         {club.name}
                       </h3>
                       <p className="mt-1.5 text-xs text-text-muted whitespace-normal line-clamp-2">
-                        {club.city} • {t.teamsHubLabel}
+                        {club.city || "Morocco"} • {t.teamsHubLabel}
                       </p>
                     </div>
                     <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">

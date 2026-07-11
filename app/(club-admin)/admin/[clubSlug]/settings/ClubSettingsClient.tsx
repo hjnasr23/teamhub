@@ -16,6 +16,7 @@ interface ClubSettingsClientProps {
     logoUrl: string | null;
     bannerUrl: string | null;
     description: string | null;
+    city: string;
   };
 }
 
@@ -26,6 +27,8 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
   const [primaryColor, setPrimaryColor] = useState(club.primaryColor);
   const [secondaryColor, setSecondaryColor] = useState(club.secondaryColor);
   const [description, setDescription] = useState(club.description || "");
+  const [city, setCity] = useState(club.city || "");
+  const [logoUrlInput, setLogoUrlInput] = useState(club.logoUrl || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -39,6 +42,8 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
       formData.append("primaryColor", primaryColor);
       formData.append("secondaryColor", bgType === "solid" ? primaryColor : secondaryColor);
       formData.append("description", description);
+      formData.append("city", city);
+      formData.append("logoUrl", logoUrlInput);
 
       const res = await uploadClubLogoAction(club.slug, formData);
 
@@ -150,10 +155,36 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
                   </div>
                 )}
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. Casablanca, Rabat"
+                  required
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all mb-4"
+                />
+              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                  Portal Header Crest (Logo)
+                  Club Logo URL
+                </label>
+                <input
+                  type="text"
+                  value={logoUrlInput}
+                  onChange={(e) => setLogoUrlInput(e.target.value)}
+                  placeholder="https://example.com/logo.png"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all mb-4"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                  Portal Header Crest (Logo File Upload)
                 </label>
                 <div className="flex items-center gap-4">
                   {club.logoUrl && (

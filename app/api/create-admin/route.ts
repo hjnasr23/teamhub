@@ -11,19 +11,29 @@ export async function GET() {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.upsert({
-      where: { email: "superadmin@teamhub.com" },
+      where: { email: "superadmin@teamhub.ma" },
       update: {
         password: hashedPassword,
         role: "SUPER_ADMIN",
+        firstName: "Super Admin",
+        lastName: "TEAMHUB",
       },
       create: {
-        email: "superadmin@teamhub.com",
+        email: "superadmin@teamhub.ma",
         password: hashedPassword,
         role: "SUPER_ADMIN",
-        firstName: "Super",
-        lastName: "Admin",
+        firstName: "Super Admin",
+        lastName: "TEAMHUB",
       },
     });
+
+    console.log("\n==================================================");
+    console.log(`✅ SUCCESS: Super Admin user successfully written!`);
+    console.log(`📧 Email: ${user.email}`);
+    console.log(`👤 Name: ${user.firstName} ${user.lastName}`);
+    console.log(`🛡️  Role: ${user.role}`);
+    console.log(`🆔 ID: ${user.id}`);
+    console.log("==================================================\n");
 
     return NextResponse.json({
       success: true,
