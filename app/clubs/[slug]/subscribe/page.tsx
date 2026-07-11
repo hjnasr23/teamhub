@@ -2,14 +2,16 @@ import React from "react";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/actions";
+import { getPlatformSettings } from "@/lib/super-admin-actions";
 import SubscribeClient from "./SubscribeClient";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ planId?: string }>;
 }
 
-export default async function SubscribePage({ params, searchParams }: PageProps) {
+export const dynamic = "force-dynamic";
+
+export default async function SubscribePage({ params }: PageProps) {
   const { slug } = await params;
 
   // 1. Authenticate Fan Session
@@ -18,42 +20,52 @@ export default async function SubscribePage({ params, searchParams }: PageProps)
     redirect(`/login?callbackUrl=/clubs/${slug}/subscribe`);
   }
 
-  const resolvedSearchParams = await searchParams;
-  const { planId } = resolvedSearchParams;
-
-  // 2. Fetch real club details from PostgreSQL via Prisma
+  // 2. Fetch club details
   const club = await prisma.club.findUnique({
-    where: { slug }
+    where: { slug },
   });
 
   if (!club) {
     notFound();
   }
 
-  // 3. Dynamic Context Parsing (Determine what the Fan is buying)
-  let planName = "Standard Member Subscription";
-  let price = 50; // Default requested by user: 50 DH/Month
-  let billingCycle = "Month";
-
-  if (planId === "vip") {
-    planName = "Gold VIP Access";
-    price = 150;
-  } else if (planId === "annual") {
-    planName = "Annual Supporter Subscription";
-    price = 500;
-    billingCycle = "Year";
+  // 3. Check existing paid subscription
+  let hasActiveSubscription = false;
+  const activeSub = await prisma.subscription.findFirst({
+    where: {
+      fanId: session.userId,
+      clubId: club.id,
+      status: "ACTIVE",
+      amount: { gt: 0 },
+    },
+  });
+  if (activeSub) {
+    hasActiveSubscription = true;
   }
 
-  const clubLogoInitials = club.name.substring(0, 2).toUpperCase();
+  // 4. Fetch global platform settings (commission / discount)
+  const platformSettings = await getPlatformSettings();
+  const commissionRate = platformSettings.commissionRate ?? 0.10;
+
+  // 5. Compute pricing
+  const monthlyBasePrice = 50;
+  const annualBasePrice = 600; // 12 × 50
+  const annualDiscountPercent = Math.round(commissionRate * 100); // e.g. 0.10 → 10%
+  const annualDiscountedPrice = Math.round(annualBasePrice * (1 - commissionRate));
 
   return (
-    <SubscribeClient 
+    <SubscribeClient
       clubName={club.name}
-      clubLogoInitials={clubLogoInitials}
-      planName={planName}
-      price={price}
-      billingCycle={billingCycle}
       clubSlug={slug}
+      clubLogoUrl={club.logoUrl}
+      clubLogoInitials={club.name.substring(0, 2).toUpperCase()}
+      primaryColor={club.primaryColor}
+      secondaryColor={club.secondaryColor}
+      monthlyPrice={monthlyBasePrice}
+      annualOriginalPrice={annualBasePrice}
+      annualDiscountedPrice={annualDiscountedPrice}
+      annualDiscountPercent={annualDiscountPercent}
+      hasActiveSubscription={hasActiveSubscription}
     />
   );
 }

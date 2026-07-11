@@ -87,13 +87,13 @@ export default function SubscribersClient({ initialSubscribers, clubsList }: { i
                     <td className="px-4 md:px-6 py-4 text-slate-500 dark:text-slate-400">
                       {sub.email}
                     </td>
-                    <td className="px-4 md:px-6 py-4 text-slate-750 dark:text-slate-300">
+                    <td className="px-4 md:px-6 py-4 text-slate-700 dark:text-slate-300">
                       {sub.club}
                     </td>
                     <td className="px-4 md:px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                         sub.tier === "Gold" ? "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50" :
-                        sub.tier === "Silver" ? "bg-slate-100 dark:bg-slate-800/40 text-slate-700 dark:text-slate-350 border-slate-200 dark:border-slate-800" :
+                        sub.tier === "Silver" ? "bg-slate-100 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800" :
                         "bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900/50"
                       }`}>
                         {sub.tier}

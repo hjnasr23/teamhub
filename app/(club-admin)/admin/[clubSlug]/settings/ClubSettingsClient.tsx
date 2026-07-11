@@ -84,7 +84,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
                   Background Type
                 </label>
                 <div className="flex gap-6 mt-1">
-                  <label className="inline-flex items-center text-sm text-slate-700 dark:text-slate-350 cursor-pointer">
+                  <label className="inline-flex items-center text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                     <input
                       type="radio"
                       name="bgType"
@@ -98,7 +98,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
                     />
                     Solid (Single Color)
                   </label>
-                  <label className="inline-flex items-center text-sm text-slate-700 dark:text-slate-350 cursor-pointer">
+                  <label className="inline-flex items-center text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                     <input
                       type="radio"
                       name="bgType"
@@ -129,7 +129,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
                       }}
                       className="h-10 w-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer"
                     />
-                    <span className="text-xs text-slate-600 dark:text-slate-350 font-mono font-semibold">{primaryColor}</span>
+                    <span className="text-xs text-slate-600 dark:text-slate-300 font-mono font-semibold">{primaryColor}</span>
                   </div>
                 </div>
 
@@ -145,7 +145,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
                         onChange={(e) => setSecondaryColor(e.target.value)}
                         className="h-10 w-12 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer"
                       />
-                      <span className="text-xs text-slate-600 dark:text-slate-350 font-mono font-semibold">{secondaryColor}</span>
+                      <span className="text-xs text-slate-600 dark:text-slate-300 font-mono font-semibold">{secondaryColor}</span>
                     </div>
                   </div>
                 )}

@@ -1,247 +1,428 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldCheck, CreditCard, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  Crown,
+  Zap,
+  CheckCircle2,
+  ArrowLeft,
+  Loader2,
+  Shield,
+  Sparkles,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createSubscriptionAction } from "@/lib/actions";
+import Link from "next/link";
 
 interface SubscribeClientProps {
   clubName: string;
-  clubLogoInitials: string;
-  planName: string;
-  price: number;
-  billingCycle: string;
   clubSlug: string;
+  clubLogoUrl: string | null;
+  clubLogoInitials: string;
+  primaryColor: string;
+  secondaryColor: string;
+  monthlyPrice: number;
+  annualOriginalPrice: number;
+  annualDiscountedPrice: number;
+  annualDiscountPercent: number;
+  hasActiveSubscription: boolean;
 }
+
+const isColorLight = (hexColor: string | null | undefined) => {
+  if (!hexColor) return false;
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const brightness = r * 0.2126 + g * 0.7152 + b * 0.0722;
+  return brightness > 128;
+};
 
 export default function SubscribeClient({
   clubName,
-  clubLogoInitials,
-  planName,
-  price,
-  billingCycle,
   clubSlug,
+  clubLogoUrl,
+  clubLogoInitials,
+  primaryColor,
+  secondaryColor,
+  monthlyPrice,
+  annualOriginalPrice,
+  annualDiscountedPrice,
+  annualDiscountPercent,
+  hasActiveSubscription,
 }: SubscribeClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"card" | "paypal">("card");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const searchParams = useSearchParams();
+  const lang = searchParams.get("lang") || "en";
+  const isRTL = lang === "ar";
+
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const taxAmount = price * 0.20; // Example 20% VAT
-  const totalAmount = price + taxAmount;
+  const primary = primaryColor || "#10B981";
+  const secondary = secondaryColor || "#059669";
+  const isPrimaryLight = isColorLight(primary);
+  const heroTextColor = isPrimaryLight ? "text-slate-900" : "text-white";
 
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const heroBackgroundStyle: React.CSSProperties =
+    primary === secondary
+      ? { backgroundColor: primary }
+      : { background: `linear-gradient(135deg, ${primary}, ${secondary})` };
+
+  const handleSelectPlan = async (planType: "monthly" | "annual") => {
     setError(null);
-    setIsProcessing(true);
+    setProcessingPlan(planType);
+
+    const amount = planType === "monthly" ? monthlyPrice : annualDiscountedPrice;
 
     try {
-      const res = await createSubscriptionAction(clubSlug, price);
+      const res = await createSubscriptionAction(clubSlug, amount);
       if (!res.success) {
-        setError(res.error || "Failed to create subscription.");
-        setIsProcessing(false);
+        setError(res.error || "Failed to process subscription.");
+        setProcessingPlan(null);
         return;
       }
-      setIsProcessing(false);
-      alert("Subscription activated successfully!");
-      router.push(`/clubs/${clubSlug}`);
+      router.push(`/clubs/${clubSlug}?lang=${lang}`);
       router.refresh();
-    } catch (err) {
-      setError("An unexpected error occurred during subscription processing.");
-      setIsProcessing(false);
+    } catch {
+      setError("An unexpected error occurred.");
+      setProcessingPlan(null);
     }
   };
 
+  const monthlyPerMonth = monthlyPrice;
+  const annualPerMonth = Math.round(annualDiscountedPrice / 12);
+
+  // i18n
+  const t = {
+    en: {
+      title: "Choose Your Membership",
+      subtitle: `Unlock exclusive premium content from ${clubName}`,
+      monthly: "Monthly Supporter",
+      monthlyDesc: "Essential access to all premium posts and community interaction.",
+      annual: "Annual VIP Access",
+      annualDesc: "Full year of premium access with exclusive VIP perks and merchandise discounts.",
+      perMonth: "/ month",
+      perYear: "/ year",
+      billedMonthly: "Billed monthly",
+      billedAnnually: "Billed annually",
+      save: "Save",
+      subscribe: "Subscribe Now",
+      processing: "Processing...",
+      back: "Back to Club",
+      alreadySubscribed: "You already have an active subscription.",
+      features: ["All premium posts unlocked", "Direct club interaction", "Cancel anytime"],
+      vipFeatures: ["Everything in Monthly", "Exclusive VIP badge", "Merchandise discounts", "Priority support"],
+      bestValue: "Best Value",
+      mostPopular: "Most Popular",
+      securePayment: "Secured by SSL encryption • Cancel anytime",
+    },
+    fr: {
+      title: "Choisissez Votre Abonnement",
+      subtitle: `Débloquez le contenu premium exclusif de ${clubName}`,
+      monthly: "Supporter Mensuel",
+      monthlyDesc: "Accès essentiel à tous les posts premium et interaction communautaire.",
+      annual: "Accès VIP Annuel",
+      annualDesc: "Un an complet d'accès premium avec avantages VIP exclusifs et réductions.",
+      perMonth: "/ mois",
+      perYear: "/ an",
+      billedMonthly: "Facturé mensuellement",
+      billedAnnually: "Facturé annuellement",
+      save: "Économisez",
+      subscribe: "S'abonner",
+      processing: "Traitement...",
+      back: "Retour au Club",
+      alreadySubscribed: "Vous avez déjà un abonnement actif.",
+      features: ["Posts premium débloqués", "Interaction avec le club", "Annulation à tout moment"],
+      vipFeatures: ["Tout du mensuel", "Badge VIP exclusif", "Réductions boutique", "Support prioritaire"],
+      bestValue: "Meilleure Offre",
+      mostPopular: "Le Plus Populaire",
+      securePayment: "Sécurisé par cryptage SSL • Annulation à tout moment",
+    },
+    ar: {
+      title: "اختر عضويتك",
+      subtitle: `افتح المحتوى المميز الحصري من ${clubName}`,
+      monthly: "داعم شهري",
+      monthlyDesc: "وصول أساسي لجميع المنشورات المميزة والتفاعل المجتمعي.",
+      annual: "عضوية VIP سنوية",
+      annualDesc: "سنة كاملة من الوصول المميز مع امتيازات VIP حصرية وخصومات.",
+      perMonth: "/ شهر",
+      perYear: "/ سنة",
+      billedMonthly: "يُفوتر شهرياً",
+      billedAnnually: "يُفوتر سنوياً",
+      save: "وفر",
+      subscribe: "اشترك الآن",
+      processing: "جاري المعالجة...",
+      back: "العودة للنادي",
+      alreadySubscribed: "لديك اشتراك نشط بالفعل.",
+      features: ["جميع المنشورات المميزة", "تفاعل مع النادي", "إلغاء في أي وقت"],
+      vipFeatures: ["كل مميزات الشهري", "شارة VIP حصرية", "خصومات المتجر", "دعم أولوي"],
+      bestValue: "أفضل قيمة",
+      mostPopular: "الأكثر شعبية",
+      securePayment: "مؤمن بتشفير SSL • إلغاء في أي وقت",
+    },
+  }[lang] || {
+    title: "Choose Your Membership",
+    subtitle: `Unlock exclusive premium content from ${clubName}`,
+    monthly: "Monthly Supporter",
+    monthlyDesc: "Essential access to all premium posts and community interaction.",
+    annual: "Annual VIP Access",
+    annualDesc: "Full year of premium access with exclusive VIP perks and merchandise discounts.",
+    perMonth: "/ month",
+    perYear: "/ year",
+    billedMonthly: "Billed monthly",
+    billedAnnually: "Billed annually",
+    save: "Save",
+    subscribe: "Subscribe Now",
+    processing: "Processing...",
+    back: "Back to Club",
+    alreadySubscribed: "You already have an active subscription.",
+    features: ["All premium posts unlocked", "Direct club interaction", "Cancel anytime"],
+    vipFeatures: ["Everything in Monthly", "Exclusive VIP badge", "Merchandise discounts", "Priority support"],
+    bestValue: "Best Value",
+    mostPopular: "Most Popular",
+    securePayment: "Secured by SSL encryption • Cancel anytime",
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#060b13] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display">
-            Become a Member
+    <div
+      dir={isRTL ? "rtl" : "ltr"}
+      className="min-h-screen flex flex-col"
+      style={{
+        ...heroBackgroundStyle,
+        backgroundAttachment: "fixed",
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Subtle decorative pattern overlay */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
+
+      <div className="flex-grow flex flex-col items-center justify-center px-4 py-16 relative z-10">
+        {/* Back Navigation */}
+        <div className="w-full max-w-3xl mb-8">
+          <Link
+            href={`/clubs/${clubSlug}?lang=${lang}`}
+            className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/10 rounded-xl transition-all ${heroTextColor}`}
+          >
+            <ArrowLeft className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />
+            {t.back}
+          </Link>
+        </div>
+
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          {/* Club Logo */}
+          <div className="mx-auto mb-6 h-20 w-20 rounded-2xl overflow-hidden border-[3px] border-white/30 shadow-2xl flex items-center justify-center bg-white/10 backdrop-blur-sm">
+            {clubLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={clubLogoUrl} alt={clubName} className="h-full w-full object-cover" />
+            ) : (
+              <span className={`font-display text-2xl font-black ${heroTextColor}`}>
+                {clubLogoInitials}
+              </span>
+            )}
+          </div>
+          <h1 className={`font-display text-3xl md:text-4xl font-extrabold tracking-tight ${heroTextColor}`}
+              style={{ textShadow: "0 2px 4px rgba(0,0,0,0.15)" }}>
+            {t.title}
           </h1>
-          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
-            Securely subscribe to unlock {clubName}'s exclusive premium content.
+          <p className={`mt-3 text-base max-w-md mx-auto ${isPrimaryLight ? "text-slate-700" : "text-white/75"}`}>
+            {t.subtitle}
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-slate-800">
-          <div className="grid grid-cols-1 lg:grid-cols-2">
-            
-            {/* ── Left Column: Order Summary ── */}
-            <div className="bg-gray-50 dark:bg-slate-800/50 p-8 lg:p-10 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-slate-800">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 rounded-xl bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB] font-bold text-xl shadow-sm">
-                  {clubLogoInitials}
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                    {clubName}
-                  </h2>
-                  <p className="text-sm font-medium text-[#2563EB]">
-                    {planName}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-slate-300">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
-                  <span>Exclusive premium content access</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-slate-300">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
-                  <span>Direct interaction with the club</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-slate-300">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
-                  <span>Cancel anytime</span>
-                </div>
-              </div>
-
-              <div className="border-t border-gray-200 dark:border-slate-700 pt-6 space-y-3">
-                <div className="flex justify-between text-sm text-gray-600 dark:text-slate-400">
-                  <span>Subtotal</span>
-                  <span>{price.toFixed(2)} MAD</span>
-                </div>
-                <div className="flex justify-between text-sm text-gray-600 dark:text-slate-400">
-                  <span>VAT (20%)</span>
-                  <span>{taxAmount.toFixed(2)} MAD</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-gray-200 dark:border-slate-700 pt-4 mt-4">
-                  <span className="text-base font-bold text-gray-900 dark:text-white">Total due today</span>
-                  <span className="text-2xl font-extrabold text-[#10B981]">
-                    {totalAmount.toFixed(2)} <span className="text-sm font-medium text-gray-500">MAD/{billingCycle}</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-slate-500 font-medium bg-gray-100 dark:bg-slate-800/50 py-3 rounded-lg border border-gray-200 dark:border-slate-700">
-                <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-                Secure SSL Encrypted Transaction
-              </div>
-            </div>
-
-            {/* ── Right Column: Payment Hub Selector ── */}
-            <div className="p-8 lg:p-10">
-              
-              {/* Tab Switcher */}
-              <div className="flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl mb-8">
-                <button
-                  onClick={() => setActiveTab("card")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                    activeTab === "card"
-                      ? "bg-white dark:bg-slate-700 text-[#2563EB] shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                      : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-white"
-                  }`}
-                >
-                  <CreditCard className="w-4 h-4" />
-                  Credit/Debit Card
-                </button>
-                <button
-                  onClick={() => setActiveTab("paypal")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                    activeTab === "paypal"
-                      ? "bg-white dark:bg-slate-700 text-[#2563EB] shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                      : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-white"
-                  }`}
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zM11.636 4.31H7.81L6.096 15.087h3.332c3.488 0 5.864-1.22 6.536-4.664.298-1.52.176-2.61-.433-3.3-.61-.69-1.745-1.015-3.895-1.015z" />
-                  </svg>
-                  PayPal
-                </button>
-              </div>
-
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                </div>
-              )}
-
-              <form onSubmit={handleCheckout} className="space-y-6">
-                
-                {/* ── Stripe Card Selector Mockup ── */}
-                {activeTab === "card" && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-                        Card Information
-                      </label>
-                      <div className="border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-3 shadow-sm focus-within:ring-2 focus-within:ring-[#2563EB] focus-within:border-transparent transition-all">
-                        {/* Placeholder for @stripe/react-stripe-js CardElement */}
-                        <div className="h-6 flex items-center text-sm text-gray-400 select-none">
-                          <Lock className="w-4 h-4 mr-2" />
-                          <span>0000 0000 0000 0000</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-                          Expiry Date
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="MM / YY"
-                          className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-3 text-sm text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-[#2563EB] focus:border-transparent outline-none transition-all"
-                          required={activeTab === "card"}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-                          CVC
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="123"
-                          maxLength={4}
-                          className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-3 text-sm text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-[#2563EB] focus:border-transparent outline-none transition-all"
-                          required={activeTab === "card"}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── PayPal Container Mockup ── */}
-                {activeTab === "paypal" && (
-                  <div className="py-6 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800/50">
-                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400 mb-4 text-center px-6">
-                      Clicking below will securely redirect you to PayPal to authorize the transaction.
-                    </p>
-                    {/* Placeholder for window.paypal.Buttons() */}
-                    <div className="w-full max-w-[250px] h-12 bg-[#FFC439] rounded-full flex items-center justify-center opacity-80 cursor-not-allowed">
-                      <span className="font-bold text-[#003087] italic">PayPal</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Checkout Action Button */}
-                <button
-                  type="submit"
-                  disabled={isProcessing}
-                  className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-[#2563EB] hover:bg-[#1d4ed8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2563EB] disabled:opacity-70 disabled:cursor-not-allowed shadow-md transition-all duration-200"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Processing secure payment...
-                    </>
-                  ) : (
-                    `Subscribe & Pay ${totalAmount.toFixed(2)} MAD`
-                  )}
-                </button>
-                <p className="text-center text-xs text-gray-400 mt-4">
-                  By confirming, you agree to our Terms of Service and Privacy Policy.
-                </p>
-              </form>
-
-            </div>
+        {/* Already Subscribed Banner */}
+        {hasActiveSubscription && (
+          <div className="w-full max-w-3xl mb-8 p-4 bg-emerald-500/20 backdrop-blur-sm border border-emerald-400/30 rounded-2xl text-center">
+            <p className={`text-sm font-semibold ${heroTextColor}`}>
+              ✓ {t.alreadySubscribed}
+            </p>
           </div>
+        )}
+
+        {/* Error Banner */}
+        {error && (
+          <div className="w-full max-w-3xl mb-6 p-4 bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-2xl text-center">
+            <p className="text-sm font-semibold text-white">{error}</p>
+          </div>
+        )}
+
+        {/* ═══════════ Pricing Cards Grid ═══════════ */}
+        <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* ── Card 1: Monthly Supporter ── */}
+          <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-2xl p-7 flex flex-col transition-all duration-300 hover:shadow-3xl hover:translate-y-[-4px]">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-11 w-11 rounded-xl flex items-center justify-center shadow-sm"
+                   style={{ backgroundColor: primary }}>
+                <Zap className={`h-5 w-5 ${isPrimaryLight ? "text-slate-900" : "text-white"}`} />
+              </div>
+              <div>
+                <h3 className="font-display text-base font-bold text-slate-900 dark:text-white">
+                  {t.monthly}
+                </h3>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  {t.mostPopular}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+              {t.monthlyDesc}
+            </p>
+
+            {/* Price */}
+            <div className="mb-6">
+              <div className="flex items-baseline gap-1">
+                <span className="font-display text-4xl font-extrabold text-slate-900 dark:text-white">
+                  {monthlyPerMonth}
+                </span>
+                <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
+                  MAD {t.perMonth}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-slate-400">{t.billedMonthly}</p>
+            </div>
+
+            {/* Feature List */}
+            <ul className="space-y-3 mb-8 flex-grow">
+              {t.features.map((feature, i) => (
+                <li key={i} className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            {/* CTA Button */}
+            <button
+              onClick={() => handleSelectPlan("monthly")}
+              disabled={!!processingPlan || hasActiveSubscription}
+              className="w-full py-3.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed border-2 hover:shadow-lg active:scale-[0.98]"
+              style={{
+                borderColor: primary,
+                color: primary,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = primary;
+                e.currentTarget.style.color = isPrimaryLight ? "#0f172a" : "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.color = primary;
+              }}
+            >
+              {processingPlan === "monthly" ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t.processing}
+                </span>
+              ) : (
+                t.subscribe
+              )}
+            </button>
+          </div>
+
+          {/* ── Card 2: Annual VIP Access ── */}
+          <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border-2 shadow-2xl p-7 flex flex-col transition-all duration-300 hover:shadow-3xl hover:translate-y-[-4px]"
+               style={{ borderColor: primary }}>
+
+            {/* Discount Badge */}
+            {annualDiscountPercent > 0 && (
+              <div
+                className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-lg flex items-center gap-1.5"
+                style={{
+                  backgroundColor: primary,
+                  color: isPrimaryLight ? "#0f172a" : "#ffffff",
+                }}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {t.save} {annualDiscountPercent}% — {t.bestValue}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 mb-5 mt-2">
+              <div className="h-11 w-11 rounded-xl flex items-center justify-center shadow-sm"
+                   style={{ backgroundColor: primary }}>
+                <Crown className={`h-5 w-5 ${isPrimaryLight ? "text-slate-900" : "text-white"}`} />
+              </div>
+              <div>
+                <h3 className="font-display text-base font-bold text-slate-900 dark:text-white">
+                  {t.annual}
+                </h3>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: primary }}>
+                  {t.bestValue}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+              {t.annualDesc}
+            </p>
+
+            {/* Price */}
+            <div className="mb-6">
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-4xl font-extrabold text-slate-900 dark:text-white">
+                  {annualPerMonth}
+                </span>
+                <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
+                  MAD {t.perMonth}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-2">
+                {annualDiscountPercent > 0 && (
+                  <span className="text-[11px] text-slate-400 line-through">
+                    {annualOriginalPrice} MAD
+                  </span>
+                )}
+                <span className="text-[11px] font-bold" style={{ color: primary }}>
+                  {annualDiscountedPrice} MAD {t.perYear}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-slate-400">{t.billedAnnually}</p>
+            </div>
+
+            {/* VIP Feature List */}
+            <ul className="space-y-3 mb-8 flex-grow">
+              {t.vipFeatures.map((feature, i) => (
+                <li key={i} className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: primary }} />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            {/* CTA Button */}
+            <button
+              onClick={() => handleSelectPlan("annual")}
+              disabled={!!processingPlan || hasActiveSubscription}
+              className="w-full py-3.5 rounded-xl text-sm font-bold transition-all duration-200 shadow-lg cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98]"
+              style={{
+                backgroundColor: primary,
+                color: isPrimaryLight ? "#0f172a" : "#ffffff",
+              }}
+            >
+              {processingPlan === "annual" ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t.processing}
+                </span>
+              ) : (
+                t.subscribe
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Security Badge */}
+        <div className="mt-10 flex items-center justify-center gap-2">
+          <Shield className={`h-4 w-4 ${isPrimaryLight ? "text-slate-600" : "text-white/50"}`} />
+          <span className={`text-xs font-medium ${isPrimaryLight ? "text-slate-600" : "text-white/50"}`}>
+            {t.securePayment}
+          </span>
         </div>
       </div>
     </div>

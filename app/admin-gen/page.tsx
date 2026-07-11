@@ -117,7 +117,7 @@ export default async function SuperAdminDashboard() {
                 <th className="px-4 md:px-6 py-3 md:py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-350">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
               {recentClubs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 md:px-6 py-8 text-center text-slate-500 dark:text-slate-400">

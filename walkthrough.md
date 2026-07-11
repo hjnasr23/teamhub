@@ -140,8 +140,17 @@ We have successfully resolved the routing loops, dynamic metrics, and styling is
 
 ## 30. Glassmorphism Navigation Bar
 - **Frosted Backdrop Shield**: Updated [DashboardLayout.tsx](file:///c:/Users/user/TEAMHUB/teamhub/components/DashboardLayout.tsx#L149-L155) to render a full-width, sticky top glass bar (`bg-white/70 dark:bg-slate-950/70 backdrop-blur-md sticky top-0`) when viewing any fan portal page (`/clubs/*`), creating an elegant frosted-glass shield.
-- **Legibility Contrast Tuning**: Configured high-contrast semantic class overrides on all link text items, language buttons, and secondary action modules. When scrolling, complex underlying graphics blur smoothly underneath the frosted shield, preserving 100% readability.
+- **Legibility Contrast Tuning**: Configured high-contrast semantic class overrides on all link text items, language buttons, and secondary action modules. When scrolling, complex underlying graphics blur smoothly underwater the frosted shield, preserving 100% readability.
 
 ## 31. Free Follow Decoupling & Paid Premium Verification
 - **Free Follow Button**: Decoupled the main profile action from the Stripe payment route. Clicking "Follow" triggers a free database mutation creating a free subscriber relation (`amount: 0`) and updates the button dynamically to "Following" with a check icon.
 - **Paid Premium Lockups**: Kept Stripe checks fully active for membership tier options and locked premium clubhouse feed posts (`amount > 0` active subscriptions verified), routing users to checkout workflows as required.
+
+## 32. Wide-Screen Timeline Layout & Profile Expansion
+- **Wide Single-Column Layout**: Eliminated the two-column grid and completely removed the left sidebar (pricing options, overview lists, settings linkages) from the fan portal clubhouse.
+- **Extended Profile Card**: Resized the central floating profile badge card to align with the main timeline wrapper width (`max-w-5xl`), stretching cleanly to the page margins.
+- **Full-Width Timeline Feed**: Stretched the Clubhouse Posts Timeline to full container limits (`max-w-5xl`), providing maximum readability and visual balance across the center of the viewport.
+
+## 33. Official Badge Removal & Premium Checkout Interception Funnel
+- **Official Badge**: Removed the visual "Official" red/green trophy/flame badge element inside the header profile overlapping card.
+- **Entitlement Redirection**: Configured locked premium posts within the timeline feed to completely hide the blurred content body container. Clicking anywhere on the locked premium post container intercepts the action, programmatically redirecting the user straight to `/clubs/${slug}/subscribe?lang=${lang}` to complete payment setup.

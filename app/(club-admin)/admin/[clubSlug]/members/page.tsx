@@ -93,7 +93,7 @@ export default async function ClubMembersPage({ params }: PageProps) {
             <input
               type="text"
               placeholder="Search clubs..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-650 focus:outline-none"
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
               disabled
             />
           </div>
@@ -128,13 +128,13 @@ export default async function ClubMembersPage({ params }: PageProps) {
                         {fan.tier}
                       </span>
                     </td>
-                    <td className="py-3.5 text-emerald-600 dark:text-emerald-450 font-semibold">{fan.mrr}</td>
+                    <td className="py-3.5 text-emerald-600 dark:text-emerald-400 font-semibold">{fan.mrr}</td>
                     <td className="py-3.5 text-slate-500 dark:text-slate-400">{fan.date}</td>
                     <td className="py-3.5">
                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                         fan.status === "Active"
                           ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50"
-                          : "bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-455 border-rose-200 dark:border-rose-900/50"
+                          : "bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50"
                       }`}>
                         <div className={`h-1.5 w-1.5 rounded-full ${fan.status === "Active" ? "bg-emerald-500" : "bg-rose-500"}`} />
                         {fan.status}
@@ -150,7 +150,7 @@ export default async function ClubMembersPage({ params }: PageProps) {
               </tbody>
             </table>
           ) : (
-            <div className="text-center py-12 text-sm text-slate-550 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+            <div className="text-center py-12 text-sm text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
               No subscription members registered yet.
             </div>
           )}

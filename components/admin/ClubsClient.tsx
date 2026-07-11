@@ -105,7 +105,7 @@ export default function ClubsClient({ initialClubs }: { initialClubs: any[] }) {
                 <th className="px-4 md:px-6 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-350">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
               {clubs.map((club) => {
                 const activeSubs = club._count?.subscriptions || 0;
                 const estimatedRev = activeSubs * 50;
