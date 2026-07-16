@@ -13,11 +13,29 @@ import {
   Upload,
   Plus,
   Video,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MoreVertical,
+  X
 } from "lucide-react";
-import { createClubPostAction, requestPayoutAction } from "@/lib/club-admin-actions";
-import { uploadClubAsset } from "@/lib/media-actions";
+import { createClubPostAction, requestPayoutAction, updateClubPostAction, deleteClubPostAction } from "@/lib/club-admin-actions";
 import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+);
+
+function formatDate(dateInput: any) {
+  if (!dateInput) return "";
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return "";
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  return `${month} ${day}, ${year}`;
+}
 
 interface ClubDashboardClientProps {
   clubId: string;
@@ -49,7 +67,64 @@ export default function ClubDashboardClient({
   const [activeTab, setActiveTab] = useState<"overview" | "posts" | "payouts">("overview");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState("");
+  const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [activePostDropdown, setActivePostDropdown] = useState<string | null>(null);
   const router = useRouter();
+
+  const handleDeletePost = async (postId: string) => {
+    setActivePostDropdown(null);
+    if (!confirm("Are you sure you want to permanently delete this post? This action cannot be undone.")) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await deleteClubPostAction(clubId, postId);
+      if (res.success) {
+        alert("Post deleted successfully!");
+        router.refresh();
+      } else {
+        alert(res.error || "Failed to delete post.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert("An unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditPostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPost) return;
+
+    setIsSubmitting(true);
+    try {
+      const form = e.target as HTMLFormElement;
+      const title = (form.elements.namedItem("editTitle") as HTMLInputElement).value;
+      const content = (form.elements.namedItem("editContent") as HTMLTextAreaElement).value;
+      const visibility = (form.elements.namedItem("editVisibility") as HTMLSelectElement).value as "PUBLIC" | "PREMIUM";
+
+      const res = await updateClubPostAction(clubId, editingPost.id, {
+        title,
+        content,
+        visibility
+      });
+
+      if (res.success) {
+        alert("Post updated successfully!");
+        setEditingPost(null);
+        router.refresh();
+      } else {
+        alert(res.error || "Failed to update post.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert("An unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Calculations for payouts
   const grossRev = metrics.grossRevenue;
@@ -79,8 +154,11 @@ export default function ClubDashboardClient({
       let mediaType = "text";
 
       if (mediaFile) {
-        const formData = new FormData();
-        formData.append("file", mediaFile);
+        if (mediaFile.size > 50 * 1024 * 1024) {
+          alert("Video size cannot exceed 50MB. Please compress your video.");
+          setIsSubmitting(false);
+          return;
+        }
 
         // Determine media type
         if (mediaFile.type.startsWith("image/")) {
@@ -89,14 +167,30 @@ export default function ClubDashboardClient({
           mediaType = "video";
         }
 
-        const uploadRes = await uploadClubAsset(formData, "posts");
-        if (uploadRes.success) {
-          mediaUrl = uploadRes.mediaUrl ?? "";
-        } else {
-          alert("Media upload failed: " + uploadRes.error);
+        const fileExtension = mediaFile.name.split('.').pop() || "bin";
+        const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+        const filePath = `posts/${uniqueFilename}`;
+
+        // Direct client-side upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("club-media")
+          .upload(filePath, mediaFile, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: mediaFile.type || "application/octet-stream"
+          });
+
+        if (uploadError) {
+          alert("Media upload failed: " + uploadError.message);
           setIsSubmitting(false);
           return;
         }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("club-media")
+          .getPublicUrl(filePath);
+
+        mediaUrl = publicUrl;
       }
 
       const res = await createClubPostAction(clubId, {
@@ -325,7 +419,7 @@ export default function ClubDashboardClient({
                           {sub.amount} MAD/mo
                         </span>
                         <span className="text-[10px] text-slate-500 block mt-1">
-                          {new Date(sub.createdAt).toLocaleDateString()}
+                          {formatDate(sub.createdAt)}
                         </span>
                       </div>
                     </div>
@@ -407,8 +501,7 @@ export default function ClubDashboardClient({
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
             <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white mb-6">Published Posts CMS</h2>
 
-            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-              {recentPosts.length > 0 ? (
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">              {recentPosts.length > 0 ? (
                 recentPosts.map((post) => (
                   <div key={post.id} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl flex items-start gap-4 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition-all">
                     <div className={`h-10 w-10 shrink-0 border rounded-lg flex items-center justify-center text-xs font-semibold ${post.visibility === "PREMIUM"
@@ -420,24 +513,69 @@ export default function ClubDashboardClient({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-4">
-                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{post.title}</h4>
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border ${post.visibility === "PREMIUM"
-                          ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                          : "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                          }`}>
-                          {post.visibility}
-                        </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{post.title}</h4>
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${post.visibility === "PREMIUM"
+                            ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                            : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                            }`}>
+                            {post.visibility}
+                          </span>
+                          {!post.mediaUrl && (
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-medium border shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700">
+                              Text Only
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Actions Menu */}
+                        <div className="relative shrink-0">
+                          <button
+                            onClick={() => setActivePostDropdown(activePostDropdown === post.id ? null : post.id)}
+                            className="p-1 rounded-md text-slate-400 hover:text-slate-605 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                          {activePostDropdown === post.id && (
+                            <>
+                              <div className="fixed inset-0 z-10" onClick={() => setActivePostDropdown(null)} />
+                              <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl py-1.5 z-20 text-left animate-in fade-in slide-in-from-top-1 duration-100">
+                                <button
+                                  onClick={() => {
+                                    setEditingPost(post);
+                                    setActivePostDropdown(null);
+                                  }}
+                                  className="w-full px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer text-xs"
+                                >
+                                  Edit Post Content
+                                </button>
+                                <button
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="w-full px-4 py-2 hover:bg-red-50 dark:hover:bg-red-955/20 text-red-650 dark:text-red-400 flex items-center gap-2 cursor-pointer text-xs font-semibold"
+                                >
+                                  Delete Post
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{post.content}</p>
 
-                      {post.mediaUrl && (
-                        <div className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 underline truncate">
-                          <a href={post.mediaUrl} target="_blank" rel="noopener noreferrer">View Attachment</a>
+                      {/* Media Display Logic */}
+                      {post.mediaUrl ? (
+                        <div className="mt-3 relative rounded-lg overflow-hidden max-w-md border border-slate-200 dark:border-slate-800 bg-black/5 dark:bg-black/20">
+                          {post.mediaType === "video" || post.mediaUrl.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                            <video src={post.mediaUrl} controls className="w-full h-auto max-h-60 object-contain" />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={post.mediaUrl} alt={post.title} className="w-full h-auto max-h-60 object-contain" />
+                          )}
                         </div>
-                      )}
+                      ) : null}
 
                       <div className="text-[10px] text-slate-500 mt-2">
-                        Published {new Date(post.createdAt).toLocaleDateString()}
+                        Published {formatDate(post.createdAt)}
                       </div>
                     </div>
                   </div>
@@ -527,7 +665,7 @@ export default function ClubDashboardClient({
                     <div>
                       <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{payout.amount.toLocaleString()} MAD</h4>
                       <span className="text-[10px] text-slate-500 block mt-1">
-                        Requested {new Date(payout.createdAt).toLocaleDateString()}
+                        Requested {formatDate(payout.createdAt)}
                       </span>
                     </div>
 
@@ -547,6 +685,73 @@ export default function ClubDashboardClient({
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Post Modal */}
+      {editingPost && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-md w-full rounded-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <form onSubmit={handleEditPostSubmit}>
+              <div className="p-6">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">Edit Post Content</h4>
+                  <button type="button" onClick={() => setEditingPost(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="space-y-4 mt-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Title</label>
+                    <input
+                      required
+                      type="text"
+                      name="editTitle"
+                      defaultValue={editingPost.title}
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Content</label>
+                    <textarea
+                      required
+                      rows={4}
+                      name="editContent"
+                      defaultValue={editingPost.content}
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Visibility Level</label>
+                    <select
+                      name="editVisibility"
+                      defaultValue={editingPost.visibility}
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    >
+                      <option value="PUBLIC">Public (All Users)</option>
+                      <option value="PREMIUM">Premium (Paid Supporters Only)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-950 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
+                <button 
+                  type="button"
+                  onClick={() => setEditingPost(null)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-transparent border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors cursor-pointer"
+                >
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

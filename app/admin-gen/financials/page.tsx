@@ -25,7 +25,7 @@ export default async function FinancialsPage() {
     club: req.club.name,
     amount: req.amount,
     status: req.status,
-    date: req.createdAt.toISOString().split('T')[0],
+    date: req.createdAt ? req.createdAt.toISOString().split('T')[0] : "",
   }));
 
   return (

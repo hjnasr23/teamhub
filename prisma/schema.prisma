@@ -22,6 +22,7 @@ enum PostVisibility {
 enum SubStatus {
   ACTIVE
   CANCELLED
+  SUSPENDED
 }
 
 enum ClubStatus {
@@ -61,6 +62,7 @@ model Club {
   secondaryColor   String         @default("#059669")
   subscribersCount Int            @default(0)
   status           ClubStatus     @default(ACTIVE)
+  visibility       String         @default("PRIVATE")
   createdAt        DateTime       @default(now())
 
   adminId        String?        @unique

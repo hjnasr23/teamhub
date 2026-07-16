@@ -10,6 +10,9 @@ export const dynamic = "force-dynamic";
 export default async function ClubsDirectoryPage() {
   // Query all clubs from the database at build time
   const clubs = await prisma.club.findMany({
+    where: {
+      visibility: "PUBLIC"
+    },
     orderBy: { subscribersCount: "desc" }
   });
 

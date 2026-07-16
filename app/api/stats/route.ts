@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getPlatformSettings } from "@/lib/super-admin-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,9 @@ export async function GET() {
 
     // 5. Fetch actual clubs list
     const clubsList = await prisma.club.findMany({
+      where: {
+        visibility: "PUBLIC"
+      },
       orderBy: { subscribersCount: "desc" }
     });
 
@@ -44,6 +48,11 @@ export async function GET() {
     const totalRevenue = activeSubsCount * 50;
     const avgRevenue = clubsCount > 0 ? Math.round(totalRevenue / clubsCount) : 0;
 
+    // 6. Fetch global settings for annual discount rate
+    const platformSettings = await getPlatformSettings();
+    const commissionRate = platformSettings?.commissionRate ?? 0.05;
+    const annualDiscount = Math.round(commissionRate * 100);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -52,6 +61,7 @@ export async function GET() {
         posts: postsCount,
         revenue: avgRevenue,
         clubsList: sanitizedClubs,
+        annualDiscount: annualDiscount,
       },
     });
   } catch (err: any) {
@@ -67,6 +77,7 @@ export async function GET() {
           posts: 42,
           revenue: 237417,
           clubsList: [],
+          annualDiscount: 5,
         },
       },
       { status: 200 }

@@ -4,56 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-export async function uploadPostMedia(formData: FormData) {
-  const file = formData.get('file') as File | null;
-  if (!file) {
-    throw new Error("No file provided");
-  }
 
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error("Supabase API keys are missing in the runtime environment.");
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-    const fileExtension = file.name.split('.').pop();
-    const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
-    const filePath = `posts/${uniqueFilename}`;
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const { data, error } = await supabase.storage
-      .from('club-media')
-      .upload(filePath, buffer, {
-        contentType: file.type,
-        upsert: true
-      });
-
-    if (error) {
-      console.error("Supabase storage error:", error);
-      throw new Error(`Supabase Storage Error: Please check if your bucket 'club-media' allows public inserts. Original error: ${error.message}`);
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('club-media')
-      .getPublicUrl(data.path);
-
-    return { 
-      success: true, 
-      mediaUrl: publicUrl,
-      mediaType: file.type.startsWith('video/') ? 'video' : 'image'
-    };
-
-  } catch (err: any) {
-    console.error("Media upload error:", err);
-    return { success: false, error: err.message || "Failed to upload media" };
-  }
-}
 
 export async function createPostAction(data: {
   title: string;
@@ -126,7 +77,8 @@ export async function uploadClubAsset(formData: FormData, folder: string = "bran
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    const fileExtension = file.name.split('.').pop();
+    const fileName = file.name || "";
+    const fileExtension = fileName.split('.').pop();
     const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
     const filePath = `${folder}/${uniqueFilename}`;
 
@@ -135,7 +87,7 @@ export async function uploadClubAsset(formData: FormData, folder: string = "bran
 
     const { data, error } = await supabase.storage
       .from('club-media')
-      .upload(filePath, buffer, { contentType: file.type, upsert: true });
+      .upload(filePath, buffer, { contentType: file.type || 'application/octet-stream', upsert: true });
 
     if (error) {
       console.error("Supabase storage error:", error);

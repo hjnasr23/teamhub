@@ -19,6 +19,8 @@ import {
   LogOut,
   Users,
   Globe,
+  Shield,
+  ArrowLeft,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────────────
@@ -26,7 +28,7 @@ import {
  * ──────────────────────────────────────────────────────────────────── */
 
 const NAV_LINKS = [
-  { href: "/clubs", label: "Clubs", icon: Home },
+  { href: "/clubs", label: "Clubs", icon: Shield },
 ];
 
 /* ────────────────────────────────────────────────────────────────────
@@ -38,14 +40,21 @@ export default function DashboardLayout({
   isAdmin = false,
   isLoggedIn = false,
   adminClubSlug = null,
+  session = null,
 }: {
   children: React.ReactNode;
   isAdmin?: boolean;
   isLoggedIn?: boolean;
   adminClubSlug?: string | null;
+  session?: {
+    email: string;
+    firstName: string;
+    lastName: string;
+  } | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isClubProfilePage = pathname.startsWith("/clubs/") && pathname !== "/clubs";
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
@@ -65,7 +74,10 @@ export default function DashboardLayout({
       signOut: "Sign Out",
       signingOut: "Signing Out...",
       adminDashboard: "Admin Dashboard",
-      menu: "Menu"
+      menu: "Menu",
+      theme: "Theme",
+      language: "Language",
+      backToDirectory: "Back to Clubs"
     },
     fr: {
       discover: "Clubs",
@@ -74,7 +86,10 @@ export default function DashboardLayout({
       signOut: "Se déconnecter",
       signingOut: "Déconnexion...",
       adminDashboard: "Tableau de Bord Admin",
-      menu: "Menu"
+      menu: "Menu",
+      theme: "Thème",
+      language: "Langue",
+      backToDirectory: "Retour aux Clubs"
     },
     ar: {
       discover: "الأندية",
@@ -83,7 +98,10 @@ export default function DashboardLayout({
       signOut: "تسجيل الخروج",
       signingOut: "جاري تسجيل الخروج...",
       adminDashboard: "لوحة التحكم للمشرف",
-      menu: "القائمة"
+      menu: "القائمة",
+      theme: "المظهر",
+      language: "اللغة",
+      backToDirectory: "العودة للأندية"
     }
   } as const;
 
@@ -158,8 +176,29 @@ export default function DashboardLayout({
         }
       >
         <div className="mx-auto flex h-16 w-full items-center justify-between">
-          {/* ── Left: Logo ───────────────────────────────────────── */}
-          <div className="flex items-center gap-8">
+          {/* ── Left: Logo & Back Button & Desktop nav links ─────── */}
+          <div className="flex items-center gap-2 md:gap-8">
+            {isClubProfilePage && (
+              <>
+                {/* Desktop: Sleek Back Button to the left of the logo */}
+                <Link
+                  href={`/clubs?lang=${langKey}`}
+                  className="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-slate-800/60 active:scale-95 transition-all duration-200"
+                >
+                  <ArrowLeft className={`h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5 ${isRTL ? "rotate-180" : ""}`} />
+                  <span>{t.backToDirectory}</span>
+                </Link>
+                {/* Mobile: Simple back arrow next to the logo */}
+                <Link
+                  href={`/clubs?lang=${langKey}`}
+                  className="inline-flex md:hidden items-center justify-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 active:scale-95 transition-all duration-200"
+                  aria-label="Back to Clubs"
+                >
+                  <ArrowLeft className={`h-5 w-5 ${isRTL ? "rotate-180" : ""}`} />
+                </Link>
+              </>
+            )}
+
             <Link
               href={`/?lang=${langKey}`}
               className="flex flex-shrink-0 items-center transition-opacity hover:opacity-80"
@@ -378,38 +417,91 @@ export default function DashboardLayout({
           })}
         </nav>
 
-        {/* Drawer footer — profile */}
-        <div className="border-t border-border-custom p-4">
-          <div className="mb-3 flex items-center gap-3 px-2">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-border-custom bg-neutral-bg-alt">
-              <User className="h-4 w-4 text-text-muted" />
-            </div>
-            <div className="min-w-0">
-              <span className="block truncate text-xs font-bold text-text-dark">
-                Alex Morgan
-              </span>
-              <span className="block truncate text-[10px] text-text-muted">
-                alex@teamhub.com
-              </span>
+        {/* Theme and Language controls */}
+        <div className="border-t border-border-custom px-5 py-4 flex flex-col gap-4 bg-neutral-bg-alt/30">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-text-muted">{t.theme}</span>
+            <ThemeToggle />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-text-muted">{t.language}</span>
+            <div className="flex items-center gap-1.5 text-xs font-semibold select-none">
+              {LANGS.map((lang, i) => {
+                const switcherParams = new URLSearchParams(searchParams.toString());
+                switcherParams.set("lang", lang.toLowerCase());
+                const langClass = pathname.startsWith("/clubs/")
+                  ? `${
+                      currentLang === lang
+                        ? "text-blue-600 dark:text-blue-400 font-bold"
+                        : "text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400"
+                    }`
+                  : `${
+                      currentLang === lang
+                        ? "text-emerald-500 font-bold"
+                        : "text-text-muted hover:text-emerald-500"
+                    }`;
+
+                return (
+                  <React.Fragment key={lang}>
+                    {i > 0 && <span className="opacity-30 text-text-muted">|</span>}
+                    <Link
+                      href={`${pathname}?${switcherParams.toString()}`}
+                      className={`transition-colors duration-200 px-1 py-0.5 ${langClass}`}
+                    >
+                      {lang}
+                    </Link>
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
-          {isLoggedIn ? (
-            <button
-              onClick={handleLogout}
-              disabled={isPending}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
-            >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
-              {isPending ? t.signingOut : t.signOut}
-            </button>
+        </div>
+
+        {/* Drawer footer — profile */}
+        <div className="border-t border-border-custom p-4">
+          {isLoggedIn && session ? (
+            <>
+              <div className="mb-3 flex items-center gap-3 px-2">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-border-custom bg-neutral-bg-alt">
+                  <User className="h-4 w-4 text-text-muted" />
+                </div>
+                <div className="min-w-0">
+                  <span className="block truncate text-xs font-bold text-text-dark">
+                    {session.firstName} {session.lastName}
+                  </span>
+                  <span className="block truncate text-[10px] text-text-muted">
+                    {session.email}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                disabled={isPending}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
+              >
+                <LogOut className="h-4 w-4 flex-shrink-0" />
+                {isPending ? t.signingOut : t.signOut}
+              </button>
+            </>
           ) : (
-            <Link
-              href={`/login?lang=${langKey}`}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
-            >
-              <User className="h-4 w-4 flex-shrink-0" />
-              {t.login}
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link
+                href={`/login?lang=${langKey}`}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border-custom px-4 py-2.5 text-sm font-bold text-text-dark transition-colors hover:bg-neutral-bg-alt"
+              >
+                {t.login}
+              </Link>
+              <Link
+                href={`/register?lang=${langKey}`}
+                className={`flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors ${
+                  pathname.startsWith("/clubs/")
+                    ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                    : "bg-emerald-500 hover:bg-emerald-600"
+                }`}
+              >
+                {t.signUp}
+              </Link>
+            </div>
           )}
         </div>
       </div>

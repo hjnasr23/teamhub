@@ -233,6 +233,8 @@ const dictionary: Record<string, {
   },
 };
 
+const ANNUAL_DISCOUNT_FALLBACK = 5;
+
 function MarketingPageContent() {
   const searchParams = useSearchParams();
   const lang = searchParams.get("lang") || "en";
@@ -253,6 +255,11 @@ function MarketingPageContent() {
   const [postsCount, setPostsCount] = React.useState(0);
   const [revenueCount, setRevenueCount] = React.useState(0);
   const [clubs, setClubs] = React.useState<any[]>([]);
+  const [annualDiscount, setAnnualDiscount] = React.useState(ANNUAL_DISCOUNT_FALLBACK);
+
+  const monthlyPrice = 50;
+  const annualOriginalPrice = monthlyPrice * 12;
+  const annualDiscountedPrice = Math.round(annualOriginalPrice * (1 - annualDiscount / 100));
 
   React.useEffect(() => {
     setMounted(true);
@@ -280,12 +287,18 @@ function MarketingPageContent() {
           setClubs(res.fallback.clubsList);
         }
 
+        const discount = typeof res?.data?.annualDiscount === "number"
+          ? res.data.annualDiscount
+          : (typeof res?.fallback?.annualDiscount === "number" ? res.fallback.annualDiscount : ANNUAL_DISCOUNT_FALLBACK);
+        setAnnualDiscount(discount);
+
         startAnimation(targets);
       })
       .catch((err) => {
         console.error("Failed to load live database stats, using empty fallback list:", err);
         if (!active) return;
         setClubs([]); // Ensure no mock data is shown on error/empty database
+        setAnnualDiscount(ANNUAL_DISCOUNT_FALLBACK);
         startAnimation(FALLBACKS);
       });
 
@@ -626,7 +639,7 @@ function MarketingPageContent() {
               <div className="p-8 sm:p-10 flex-1 flex flex-col">
                 <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-400">
                   <Zap className="h-3.5 w-3.5" />
-                  {t.annualBadge}
+                  {t.annualBadge.replace("25%", `${annualDiscount}%`)}
                 </div>
                 <h3 className="font-display text-xl font-bold text-text-dark">
                   {t.annualTitle}
@@ -637,7 +650,7 @@ function MarketingPageContent() {
                 <div className="mt-6 flex flex-col">
                   <div className="flex items-baseline gap-2">
                     <span className="font-display text-5xl font-extrabold tracking-tight text-text-dark">
-                      450
+                      {annualDiscountedPrice}
                     </span>
                     <span className="text-sm font-semibold text-text-muted">
                       {t.annualUnit}

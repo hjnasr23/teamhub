@@ -353,8 +353,8 @@ function ClubPageClientContent({
                 onClick={handleSubscribeClick}
                 disabled={isFollowingPending}
                 className={`group px-6 py-2.5 h-11 gap-2 text-sm font-bold shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer rounded-xl shrink-0 ${isFollowingState
-                    ? "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                    : btnTextColor
+                  ? "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  : btnTextColor
                   }`}
                 style={isFollowingState ? undefined : { backgroundColor: hex }}
               >

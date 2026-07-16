@@ -17,6 +17,7 @@ interface ClubSettingsClientProps {
     bannerUrl: string | null;
     description: string | null;
     city: string;
+    visibility?: string | null;
   };
 }
 
@@ -29,6 +30,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
   const [description, setDescription] = useState(club.description || "");
   const [city, setCity] = useState(club.city || "");
   const [logoUrlInput, setLogoUrlInput] = useState(club.logoUrl || "");
+  const [visibility, setVisibility] = useState(club.visibility || "PRIVATE");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -44,6 +46,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
       formData.append("description", description);
       formData.append("city", city);
       formData.append("logoUrl", logoUrlInput);
+      formData.append("visibility", visibility);
 
       const res = await uploadClubLogoAction(club.slug, formData);
 
@@ -233,6 +236,21 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
                   placeholder="Welcome message for your fans..."
                   className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                  Club Visibility Status
+                </label>
+                <select
+                  name="visibility"
+                  value={visibility}
+                  onChange={(e) => setVisibility(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all mb-4 cursor-pointer"
+                >
+                  <option value="PRIVATE">Private (Invisible to public directory)</option>
+                  <option value="PUBLIC">Public (Published on main directory)</option>
+                </select>
               </div>
 
               <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">

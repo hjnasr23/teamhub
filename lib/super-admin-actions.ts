@@ -97,6 +97,22 @@ export async function toggleClubStatus(clubId: string, currentStatus: string) {
   }
 }
 
+export async function toggleClubVisibility(clubId: string, currentVisibility: string) {
+  try {
+    const newVisibility = currentVisibility === "PUBLIC" ? "PRIVATE" : "PUBLIC";
+    const club = await prisma.club.update({
+      where: { id: clubId },
+      data: { visibility: newVisibility },
+    });
+    
+    revalidatePath('/admin-gen/clubs');
+    revalidatePath('/admin-gen');
+    return { success: true, data: club };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to toggle visibility" };
+  }
+}
+
 export async function getPlatformSettings() {
   try {
     const settings = await prisma.platformSetting.upsert({

@@ -150,17 +150,6 @@ export default function AdminDashboardLayout({
             >
               <Menu className="h-6 w-6" />
             </button>
-            <div className="hidden sm:flex items-center w-48 md:w-64 lg:w-96 relative">
-              <Search className="h-5 w-5 absolute left-3 text-gray-400 dark:text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search clubs, users..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-slate-850 rounded-md bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
-              />
-            </div>
-            <button className="sm:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
           </div>
 
           <div className="flex items-center gap-3">

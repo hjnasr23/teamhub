@@ -23,7 +23,7 @@ export default async function SubscribersPage() {
       tier: sub.amount >= 100 ? "Gold" : sub.amount >= 75 ? "Silver" : "Standard",
       fee: sub.amount,
       status: sub.status,
-      joinDate: sub.createdAt.toISOString().split('T')[0],
+      joinDate: sub.createdAt ? sub.createdAt.toISOString().split('T')[0] : "",
     }));
   });
 

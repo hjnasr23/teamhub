@@ -172,7 +172,8 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
       const uploadDir = path.join(process.cwd(), "public", "uploads", "logos");
       await fs.mkdir(uploadDir, { recursive: true });
 
-      const fileExtension = logoFile.name.split(".").pop() || "png";
+      const fileName = logoFile.name || "";
+      const fileExtension = fileName.split(".").pop() || "png";
       const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
       const filePath = path.join(uploadDir, filename);
       await fs.writeFile(filePath, buffer);
@@ -186,7 +187,8 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
       const uploadDir = path.join(process.cwd(), "public", "uploads", "covers");
       await fs.mkdir(uploadDir, { recursive: true });
 
-      const fileExtension = coverFile.name.split(".").pop() || "png";
+      const fileName = coverFile.name || "";
+      const fileExtension = fileName.split(".").pop() || "png";
       const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
       const filePath = path.join(uploadDir, filename);
       await fs.writeFile(filePath, buffer);
@@ -219,5 +221,94 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
   } catch (err: any) {
     console.error("uploadClubLogoAction error:", err);
     return { success: false, error: err.message || "Failed to update branding settings." };
+  }
+}
+
+export async function cancelSubscriptionAction(subId: string) {
+  try {
+    const sub = await prisma.subscription.update({
+      where: { id: subId },
+      data: { status: "CANCELLED" },
+      include: { club: true }
+    });
+
+    revalidatePath(`/admin/${sub.club.slug}/members`);
+    revalidatePath(`/clubs/${sub.club.slug}`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to cancel subscription" };
+  }
+}
+
+export async function suspendFanAction(subId: string) {
+  try {
+    const sub = await prisma.subscription.update({
+      where: { id: subId },
+      data: { status: "SUSPENDED" },
+      include: { club: true }
+    });
+
+    revalidatePath(`/admin/${sub.club.slug}/members`);
+    revalidatePath(`/clubs/${sub.club.slug}`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to suspend fan" };
+  }
+}
+
+export async function updateClubPostAction(
+  clubId: string,
+  postId: string,
+  data: {
+    title: string;
+    content: string;
+    visibility: "PUBLIC" | "PREMIUM";
+  }
+) {
+  try {
+    const session = await verifyClubAdmin(clubId);
+
+    const post = await prisma.post.update({
+      where: { id: postId, clubId: session.clubId! },
+      data: {
+        title: data.title,
+        content: data.content,
+        visibility: data.visibility,
+      },
+    });
+
+    const club = await prisma.club.findUnique({ where: { id: clubId } });
+    if (club) {
+      revalidatePath(`/admin/${club.slug}`);
+      revalidatePath(`/${club.slug}`);
+      revalidatePath(`/clubs/${club.slug}`);
+    }
+
+    return { success: true, data: post };
+  } catch (err: any) {
+    console.error("Update post error:", err);
+    return { success: false, error: err.message || "Failed to update post" };
+  }
+}
+
+export async function deleteClubPostAction(clubId: string, postId: string) {
+  try {
+    const session = await verifyClubAdmin(clubId);
+
+    await prisma.post.delete({
+      where: { id: postId, clubId: session.clubId! },
+    });
+
+    const club = await prisma.club.findUnique({ where: { id: clubId } });
+    if (club) {
+      revalidatePath(`/admin/${club.slug}`);
+      revalidatePath(`/${club.slug}`);
+      revalidatePath(`/clubs/${club.slug}`);
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Delete post error:", err);
+    return { success: false, error: err.message || "Failed to delete post" };
   }
 }

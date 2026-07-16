@@ -60,7 +60,12 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Suspense fallback={<div className="min-h-screen bg-neutral-bg-alt" />}>
-            <DashboardLayout isAdmin={isAdmin} isLoggedIn={isLoggedIn} adminClubSlug={adminClubSlug}>
+            <DashboardLayout
+              isAdmin={isAdmin}
+              isLoggedIn={isLoggedIn}
+              adminClubSlug={adminClubSlug}
+              session={session}
+            >
               {children}
               <Footer />
             </DashboardLayout>
