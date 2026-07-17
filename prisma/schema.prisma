@@ -6,6 +6,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../lib/generated/client"
 }
 
 enum Role {
@@ -56,6 +57,7 @@ model Club {
   slug             String         @unique
   description      String?
   city             String
+  country          String         @default("Morocco")
   logoUrl          String?
   bannerUrl        String?
   primaryColor     String         @default("#10B981")

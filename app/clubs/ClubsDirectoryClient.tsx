@@ -55,6 +55,93 @@ const dict: Record<
   }
 };
 
+const countryTranslations: Record<string, Record<string, string>> = {
+  en: {
+    "Morocco": "Morocco",
+    "Egypt": "Egypt",
+    "Algeria": "Algeria",
+    "Tunisia": "Tunisia",
+    "Senegal": "Senegal",
+    "Nigeria": "Nigeria",
+    "Ivory Coast": "Ivory Coast",
+    "Cameroon": "Cameroon",
+    "Ghana": "Ghana",
+    "South Africa": "South Africa",
+    "DR Congo": "DR Congo",
+    "Mali": "Mali",
+    "Angola": "Angola",
+    "France": "France",
+    "Spain": "Spain",
+    "United Kingdom": "United Kingdom",
+    "Germany": "Germany",
+    "Italy": "Italy",
+    "Portugal": "Portugal",
+    "Netherlands": "Netherlands",
+    "Belgium": "Belgium",
+    "Turkey": "Turkey",
+    "Croatia": "Croatia",
+    "Switzerland": "Switzerland",
+    "Denmark": "Denmark",
+    "Saudi Arabia": "Saudi Arabia"
+  },
+  fr: {
+    "Morocco": "Maroc",
+    "Egypt": "Égypte",
+    "Algeria": "Algérie",
+    "Tunisia": "Tunisie",
+    "Senegal": "Sénégal",
+    "Nigeria": "Nigeria",
+    "Ivory Coast": "Côte d'Ivoire",
+    "Cameroon": "Cameroun",
+    "Ghana": "Ghana",
+    "South Africa": "Afrique du Sud",
+    "DR Congo": "RD Congo",
+    "Mali": "Mali",
+    "Angola": "Angola",
+    "France": "France",
+    "Spain": "Espagne",
+    "United Kingdom": "Royaume-Uni",
+    "Germany": "Allemagne",
+    "Italy": "Italie",
+    "Portugal": "Portugal",
+    "Netherlands": "Pays-Bas",
+    "Belgium": "Belgique",
+    "Turkey": "Turquie",
+    "Croatia": "Croatie",
+    "Switzerland": "Suisse",
+    "Denmark": "Danemark",
+    "Saudi Arabia": "Arabie Saoudite"
+  },
+  ar: {
+    "Morocco": "المغرب",
+    "Egypt": "مصر",
+    "Algeria": "الجزائر",
+    "Tunisia": "تونس",
+    "Senegal": "السنغال",
+    "Nigeria": "نيجيريا",
+    "Ivory Coast": "ساحل العاج",
+    "Cameroon": "الكاميرون",
+    "Ghana": "غانا",
+    "South Africa": "جنوب أفريقيا",
+    "DR Congo": "جمهورية الكونغو الديمقراطية",
+    "Mali": "مالي",
+    "Angola": "أنغولا",
+    "France": "فرنسا",
+    "Spain": "إسبانيا",
+    "United Kingdom": "المملكة المتحدة",
+    "Germany": "ألمانيا",
+    "Italy": "إيطاليا",
+    "Portugal": "البرتغال",
+    "Netherlands": "هولندا",
+    "Belgium": "بلجيكا",
+    "Turkey": "تركيا",
+    "Croatia": "كرواتيا",
+    "Switzerland": "سويسرا",
+    "Denmark": "الدنمارك",
+    "Saudi Arabia": "المملكة العربية السعودية"
+  }
+};
+
 interface Club {
   id: string;
   name: string;
@@ -66,6 +153,7 @@ interface Club {
   logoInitials: string;
   logoUrl: string | null;
   bannerUrl: string | null;
+  country?: string;
 }
 
 function ClubsDirectoryClientContent({ clubs }: { clubs: Club[] }) {
@@ -75,11 +163,30 @@ function ClubsDirectoryClientContent({ clubs }: { clubs: Club[] }) {
 
   const t = dict[lang] || dict.en;
 
-  const filteredClubs = searchQuery
-    ? clubs.filter((club) =>
-        club.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : clubs;
+  const [selectedCountry, setSelectedCountry] = React.useState("All");
+
+  React.useEffect(() => {
+    const countryParam = searchParams.get("country");
+    if (countryParam) {
+      setSelectedCountry(countryParam);
+    } else {
+      setSelectedCountry("All");
+    }
+  }, [searchParams]);
+
+  const uniqueCountries = Array.from(
+    new Set(clubs.map((c) => c.country || "Morocco"))
+  ).filter(Boolean) as string[];
+
+  const filteredClubs = clubs.filter((club) => {
+    const matchesSearch = searchQuery
+      ? club.name.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    const matchesCountry = selectedCountry === "All"
+      ? true
+      : (club.country || "Morocco") === selectedCountry;
+    return matchesSearch && matchesCountry;
+  });
 
   return (
     <main dir={lang === "ar" ? "rtl" : "ltr"} className="pt-32 min-h-screen bg-neutral-bg px-4 md:px-8 space-y-10 w-full max-w-7xl mx-auto">
@@ -101,26 +208,65 @@ function ClubsDirectoryClientContent({ clubs }: { clubs: Club[] }) {
           {t.subtitle}
         </p>
 
-        {/* Search bar Form */}
-        <form method="GET" className="relative flex max-w-md gap-2">
-          <div className="relative flex-1">
-            <Search className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted`} />
-            <input
-              type="text"
-              name="q"
-              defaultValue={searchQuery}
-              placeholder={t.placeholder}
-              className={`w-full rounded-xl border border-border-custom bg-neutral-bg py-2.5 ${lang === 'ar' ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark placeholder:text-text-muted shadow-sm transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 dark:bg-slate-900`}
-            />
-            <input type="hidden" name="lang" value={lang} />
+        {/* Search & Filter Controls */}
+        <div className="flex flex-col sm:flex-row gap-3 max-w-2xl">
+          <form method="GET" className="relative flex flex-1 gap-2">
+            <div className="relative flex-1">
+              <Search className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted`} />
+              <input
+                type="text"
+                name="q"
+                defaultValue={searchQuery}
+                placeholder={t.placeholder}
+                className={`w-full rounded-xl border border-border-custom bg-neutral-bg py-2.5 ${lang === 'ar' ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark dark:text-slate-100 placeholder:text-text-muted shadow-sm transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 dark:bg-slate-900`}
+              />
+              <input type="hidden" name="lang" value={lang} />
+              {selectedCountry !== "All" && (
+                <input type="hidden" name="country" value={selectedCountry} />
+              )}
+            </div>
+            <button
+              type="submit"
+              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors cursor-pointer"
+            >
+              {t.searchButton}
+            </button>
+          </form>
+
+          {/* Country filter dropdown */}
+          <div className="w-full sm:w-48">
+            <select
+              value={selectedCountry}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedCountry(val);
+                
+                // Update URL params smoothly
+                const params = new URLSearchParams(window.location.search);
+                if (val === "All") {
+                  params.delete("country");
+                } else {
+                  params.set("country", val);
+                }
+                const newRelativePathQuery = window.location.pathname + '?' + params.toString();
+                window.history.pushState(null, '', newRelativePathQuery);
+              }}
+              className="w-full rounded-xl border border-border-custom bg-neutral-bg dark:bg-slate-900 py-2.5 px-4 text-sm text-text-dark dark:text-white placeholder:text-text-muted shadow-sm transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 cursor-pointer"
+            >
+              <option value="All">
+                {lang === "ar" ? "كل الدول" : lang === "fr" ? "Tous les pays" : "All Countries"}
+              </option>
+              {uniqueCountries.map((c) => {
+                const label = countryTranslations[lang]?.[c] || c;
+                return (
+                  <option key={c} value={c}>
+                    {label}
+                  </option>
+                );
+              })}
+            </select>
           </div>
-          <button
-            type="submit"
-            className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors cursor-pointer"
-          >
-            {t.searchButton}
-          </button>
-        </form>
+        </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════ */}
@@ -182,7 +328,7 @@ function ClubsDirectoryClientContent({ clubs }: { clubs: Club[] }) {
                     {/* City */}
                     <span className="mt-1 flex items-center gap-1 text-xs text-text-muted">
                       <MapPin className="h-3 w-3" />
-                      {club.city}, {t.morocco}
+                      {club.city}, {countryTranslations[lang]?.[club.country || "Morocco"] || club.country || t.morocco}
                     </span>
                   </div>
 

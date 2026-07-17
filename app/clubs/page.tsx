@@ -22,6 +22,7 @@ export default async function ClubsDirectoryPage() {
     name: club.name,
     slug: club.slug,
     city: club.city,
+    country: (club as any).country || "Morocco",
     subscribersCount: club.subscribersCount,
     primaryColor: club.primaryColor,
     secondaryColor: club.secondaryColor,

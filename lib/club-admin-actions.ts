@@ -161,6 +161,7 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
     const secondaryColor = formData.get("secondaryColor") as string | null;
     const description = formData.get("description") as string | null;
     const city = formData.get("city") as string | null;
+    const country = formData.get("country") as string | null;
     const textLogoUrl = formData.get("logoUrl") as string | null;
 
     let logoUrl = textLogoUrl || club.logoUrl;
@@ -196,16 +197,18 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
       bannerUrl = `/uploads/covers/${filename}`;
     }
 
+    const updateData: any = {};
+    if (logoUrl !== null && logoUrl !== undefined) updateData.logoUrl = logoUrl;
+    if (bannerUrl !== null && bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
+    if (primaryColor !== null && primaryColor !== undefined) updateData.primaryColor = primaryColor;
+    if (secondaryColor !== null && secondaryColor !== undefined) updateData.secondaryColor = secondaryColor;
+    if (description !== null && description !== undefined) updateData.description = description;
+    if (city !== null && city !== undefined) updateData.city = city;
+    if (country !== null && country !== undefined) updateData.country = country;
+
     const updated = await prisma.club.update({
       where: { slug },
-      data: {
-        logoUrl: logoUrl !== null && logoUrl !== undefined ? logoUrl : undefined,
-        bannerUrl: bannerUrl !== null && bannerUrl !== undefined ? bannerUrl : undefined,
-        primaryColor: primaryColor !== null && primaryColor !== undefined ? primaryColor : undefined,
-        secondaryColor: secondaryColor !== null && secondaryColor !== undefined ? secondaryColor : undefined,
-        description: description !== null && description !== undefined ? description : undefined,
-        city: city !== null && city !== undefined ? city : undefined,
-      },
+      data: updateData,
     });
 
     revalidatePath(`/admin/${slug}`);

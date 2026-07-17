@@ -17,6 +17,7 @@ interface ClubSettingsClientProps {
     bannerUrl: string | null;
     description: string | null;
     city: string;
+    country?: string | null;
     visibility?: string | null;
   };
 }
@@ -29,6 +30,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
   const [secondaryColor, setSecondaryColor] = useState(club.secondaryColor);
   const [description, setDescription] = useState(club.description || "");
   const [city, setCity] = useState(club.city || "");
+  const [country, setCountry] = useState((club as any).country || "Morocco");
   const [logoUrlInput, setLogoUrlInput] = useState(club.logoUrl || "");
   const [visibility, setVisibility] = useState(club.visibility || "PRIVATE");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,6 +47,7 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
       formData.append("secondaryColor", bgType === "solid" ? primaryColor : secondaryColor);
       formData.append("description", description);
       formData.append("city", city);
+      formData.append("country", country);
       formData.append("logoUrl", logoUrlInput);
       formData.append("visibility", visibility);
 
@@ -158,18 +161,58 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
                   </div>
                 )}
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                  City
-                </label>
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g. Casablanca, Rabat"
-                  required
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all mb-4"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="e.g. Casablanca, Rabat"
+                    required
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    Country
+                  </label>
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    <option value="Morocco">Morocco</option>
+                    <option value="Egypt">Egypt</option>
+                    <option value="Algeria">Algeria</option>
+                    <option value="Tunisia">Tunisia</option>
+                    <option value="Senegal">Senegal</option>
+                    <option value="Nigeria">Nigeria</option>
+                    <option value="Ivory Coast">Ivory Coast</option>
+                    <option value="Cameroon">Cameroon</option>
+                    <option value="Ghana">Ghana</option>
+                    <option value="South Africa">South Africa</option>
+                    <option value="DR Congo">DR Congo</option>
+                    <option value="Mali">Mali</option>
+                    <option value="Angola">Angola</option>
+                    <option value="France">France</option>
+                    <option value="Spain">Spain</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Germany">Germany</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Portugal">Portugal</option>
+                    <option value="Netherlands">Netherlands</option>
+                    <option value="Belgium">Belgium</option>
+                    <option value="Turkey">Turkey</option>
+                    <option value="Croatia">Croatia</option>
+                    <option value="Switzerland">Switzerland</option>
+                    <option value="Denmark">Denmark</option>
+                    <option value="Saudi Arabia">Saudi Arabia</option>
+                  </select>
+                </div>
               </div>
 
               <div>
