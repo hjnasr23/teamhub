@@ -30,7 +30,7 @@ export default async function DashboardFallbackRedirect() {
 
   // Redirect FAN
   if (session.role === 'FAN') {
-    redirect('/dashboard/fan');
+    redirect('/');
   }
 
   redirect('/');

@@ -77,7 +77,8 @@ export default function DashboardLayout({
       menu: "Menu",
       theme: "Theme",
       language: "Language",
-      backToDirectory: "Back to Clubs"
+      backToDirectory: "Back to Clubs",
+      accountSettings: "Account Settings"
     },
     fr: {
       discover: "Clubs",
@@ -89,7 +90,8 @@ export default function DashboardLayout({
       menu: "Menu",
       theme: "Thème",
       language: "Langue",
-      backToDirectory: "Retour aux Clubs"
+      backToDirectory: "Retour aux Clubs",
+      accountSettings: "Paramètres du compte"
     },
     ar: {
       discover: "الأندية",
@@ -101,7 +103,8 @@ export default function DashboardLayout({
       menu: "القائمة",
       theme: "المظهر",
       language: "اللغة",
-      backToDirectory: "العودة للأندية"
+      backToDirectory: "العودة للأندية",
+      accountSettings: "إعدادات الحساب"
     }
   } as const;
 
@@ -255,9 +258,9 @@ export default function DashboardLayout({
           {/* ── Right: Actions ───────────────────────────────────── */}
           <div className="flex items-center gap-4 sm:gap-6">
             
-            {isAdmin && adminClubSlug && (
+            {isAdmin && (
               <Link
-                href={`/admin/${adminClubSlug}?lang=${langKey}`}
+                href={adminClubSlug ? `/admin/${adminClubSlug}?lang=${langKey}` : `/dashboard/admin?lang=${langKey}`}
                 className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 hidden md:inline-block ${
                   pathname.startsWith("/clubs/")
                     ? "text-slate-900 dark:text-slate-100 font-medium hover:text-blue-600 dark:hover:text-blue-400"
@@ -308,13 +311,27 @@ export default function DashboardLayout({
             </div>
 
             {isLoggedIn ? (
-              <button
-                onClick={handleLogout}
-                disabled={isPending}
-                className="hidden rounded-lg bg-rose-50 px-4 py-2 text-sm font-bold text-rose-600 shadow-sm transition-colors hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-950/50 md:block"
-              >
-                {isPending ? t.signingOut : t.signOut}
-              </button>
+              <div className="hidden md:flex items-center gap-2">
+                {!isAdmin && (
+                  <Link
+                    href={`/settings?lang=${langKey}`}
+                    className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
+                      pathname.startsWith("/clubs/")
+                        ? "text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400"
+                        : "text-text-muted hover:text-text-dark"
+                    }`}
+                  >
+                    {t.accountSettings}
+                  </Link>
+                )}
+                <button
+                  onClick={handleLogout}
+                  disabled={isPending}
+                  className="rounded-lg bg-rose-50 px-4 py-2 text-sm font-bold text-rose-600 shadow-sm transition-colors hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:hover:bg-rose-950/50"
+                >
+                  {isPending ? t.signingOut : t.signOut}
+                </button>
+              </div>
             ) : (
               <div className="hidden md:flex items-center gap-2">
                 <Link
@@ -474,14 +491,34 @@ export default function DashboardLayout({
                   </span>
                 </div>
               </div>
-              <button
-                onClick={handleLogout}
-                disabled={isPending}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
-              >
-                <LogOut className="h-4 w-4 flex-shrink-0" />
-                {isPending ? t.signingOut : t.signOut}
-              </button>
+              <div className="flex flex-col gap-1">
+                {!isAdmin && (
+                  <Link
+                    href={`/settings?lang=${langKey}`}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-text-dark transition-colors hover:bg-neutral-bg-alt"
+                  >
+                    <Settings className="h-4 w-4 flex-shrink-0" />
+                    {t.accountSettings}
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link
+                    href={adminClubSlug ? `/admin/${adminClubSlug}?lang=${langKey}` : `/dashboard/admin?lang=${langKey}`}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-text-dark transition-colors hover:bg-neutral-bg-alt"
+                  >
+                    <Shield className="h-4 w-4 flex-shrink-0" />
+                    {t.adminDashboard}
+                  </Link>
+                )}
+                <button
+                  onClick={handleLogout}
+                  disabled={isPending}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20"
+                >
+                  <LogOut className="h-4 w-4 flex-shrink-0" />
+                  {isPending ? t.signingOut : t.signOut}
+                </button>
+              </div>
             </>
           ) : (
             <div className="flex flex-col gap-2">

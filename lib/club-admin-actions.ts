@@ -162,6 +162,7 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
     const description = formData.get("description") as string | null;
     const city = formData.get("city") as string | null;
     const country = formData.get("country") as string | null;
+    const visibility = formData.get("visibility") as string | null;
     const textLogoUrl = formData.get("logoUrl") as string | null;
 
     let logoUrl = textLogoUrl || club.logoUrl;
@@ -205,6 +206,7 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
     if (description !== null && description !== undefined) updateData.description = description;
     if (city !== null && city !== undefined) updateData.city = city;
     if (country !== null && country !== undefined) updateData.country = country;
+    if (visibility !== null && visibility !== undefined) updateData.visibility = visibility;
 
     const updated = await prisma.club.update({
       where: { slug },

@@ -71,7 +71,7 @@ export default function LoginForm({ lang }: LoginFormProps) {
         if (session) {
           const role = session.role;
           const clubSlug = session.clubSlug;
-          let redirectPath = callbackUrl || `/dashboard/fan?lang=${lang}`;
+          let redirectPath = callbackUrl || `/?lang=${lang}`;
           if (role === "SUPER_ADMIN" && !callbackUrl) {
             redirectPath = `/admin-gen?lang=${lang}`;
           } else if (role === "CLUB_ADMIN" && clubSlug && !callbackUrl) {
@@ -107,7 +107,7 @@ export default function LoginForm({ lang }: LoginFormProps) {
           const clubSlug = response.clubSlug;
           console.log("Login success:", { role, clubSlug });
           
-          let redirectPath = callbackUrl || `/dashboard/fan?lang=${lang}`;
+          let redirectPath = callbackUrl || `/?lang=${lang}`;
 
           if (role === "SUPER_ADMIN" && !callbackUrl) {
             redirectPath = `/admin-gen?lang=${lang}`;
