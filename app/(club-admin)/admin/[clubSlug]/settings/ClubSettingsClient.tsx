@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Settings, Sliders, Palette, Landmark, ShieldCheck, Upload } from "lucide-react";
 import { uploadClubLogoAction } from "@/lib/club-admin-actions";
+import { uploadClubAsset } from "@/lib/media-actions";
 import { useRouter } from "next/navigation";
 
 interface ClubSettingsClientProps {
@@ -43,18 +44,55 @@ export default function ClubSettingsClient({ club }: ClubSettingsClientProps) {
     try {
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
-      formData.append("primaryColor", primaryColor);
-      formData.append("secondaryColor", bgType === "solid" ? primaryColor : secondaryColor);
-      formData.append("description", description);
-      formData.append("city", city);
-      formData.append("country", country);
-      formData.append("logoUrl", logoUrlInput);
-      formData.append("visibility", visibility);
+      
+      let finalLogoUrl = logoUrlInput;
+      let finalBannerUrl = club.bannerUrl || "";
+
+      const logoFile = formData.get("logoFile") as File | null;
+      if (logoFile && logoFile.size > 0) {
+        const logoData = new FormData();
+        logoData.append("file", logoFile);
+        const res = await uploadClubAsset(logoData, "logos");
+        if (res.success && res.mediaUrl) {
+          finalLogoUrl = res.mediaUrl;
+        } else {
+          alert("Failed to upload logo: " + res.error);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const coverFile = formData.get("coverFile") as File | null;
+      if (coverFile && coverFile.size > 0) {
+        const coverData = new FormData();
+        coverData.append("file", coverFile);
+        const res = await uploadClubAsset(coverData, "covers");
+        if (res.success && res.mediaUrl) {
+          finalBannerUrl = res.mediaUrl;
+        } else {
+          alert("Failed to upload cover: " + res.error);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      formData.delete("logoFile");
+      formData.delete("coverFile");
+
+      formData.set("primaryColor", primaryColor);
+      formData.set("secondaryColor", bgType === "solid" ? primaryColor : secondaryColor);
+      formData.set("description", description);
+      formData.set("city", city);
+      formData.set("country", country);
+      formData.set("logoUrl", finalLogoUrl);
+      formData.set("bannerUrl", finalBannerUrl);
+      formData.set("visibility", visibility);
 
       const res = await uploadClubLogoAction(club.slug, formData);
 
       if (res.success) {
         alert("Visual identity updated successfully!");
+        setLogoUrlInput(finalLogoUrl);
         router.refresh();
       } else {
         alert(res.error || "Failed to update branding settings");

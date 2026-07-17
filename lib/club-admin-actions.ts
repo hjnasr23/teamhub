@@ -1,7 +1,5 @@
 "use server";
 
-import fs from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/actions";
 import { revalidatePath } from "next/cache";
@@ -155,48 +153,19 @@ export async function uploadClubLogoAction(slug: string, formData: FormData) {
       return { success: false, error: "Unauthorized club access." };
     }
 
-    const logoFile = formData.get("logoFile") as File | null;
-    const coverFile = formData.get("coverFile") as File | null;
     const primaryColor = formData.get("primaryColor") as string | null;
     const secondaryColor = formData.get("secondaryColor") as string | null;
     const description = formData.get("description") as string | null;
     const city = formData.get("city") as string | null;
     const country = formData.get("country") as string | null;
     const visibility = formData.get("visibility") as string | null;
+    
+    // Hosted URLs from frontend
     const textLogoUrl = formData.get("logoUrl") as string | null;
+    const textBannerUrl = formData.get("bannerUrl") as string | null;
 
     let logoUrl = textLogoUrl || club.logoUrl;
-    let bannerUrl = club.bannerUrl;
-
-    if (logoFile && logoFile.size > 0 && logoFile.name !== "undefined") {
-      const bytes = await logoFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "logos");
-      await fs.mkdir(uploadDir, { recursive: true });
-
-      const fileName = logoFile.name || "";
-      const fileExtension = fileName.split(".").pop() || "png";
-      const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
-      const filePath = path.join(uploadDir, filename);
-      await fs.writeFile(filePath, buffer);
-      
-      logoUrl = `/uploads/logos/${filename}`;
-    }
-
-    if (coverFile && coverFile.size > 0 && coverFile.name !== "undefined") {
-      const bytes = await coverFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "covers");
-      await fs.mkdir(uploadDir, { recursive: true });
-
-      const fileName = coverFile.name || "";
-      const fileExtension = fileName.split(".").pop() || "png";
-      const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
-      const filePath = path.join(uploadDir, filename);
-      await fs.writeFile(filePath, buffer);
-      
-      bannerUrl = `/uploads/covers/${filename}`;
-    }
+    let bannerUrl = textBannerUrl || club.bannerUrl;
 
     const updateData: any = {};
     if (logoUrl !== null && logoUrl !== undefined) updateData.logoUrl = logoUrl;
