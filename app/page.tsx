@@ -233,6 +233,93 @@ const dictionary: Record<string, {
   },
 };
 
+const countryTranslations: Record<string, Record<string, string>> = {
+  en: {
+    "Morocco": "Morocco",
+    "Egypt": "Egypt",
+    "Algeria": "Algeria",
+    "Tunisia": "Tunisia",
+    "Senegal": "Senegal",
+    "Nigeria": "Nigeria",
+    "Ivory Coast": "Ivory Coast",
+    "Cameroon": "Cameroon",
+    "Ghana": "Ghana",
+    "South Africa": "South Africa",
+    "DR Congo": "DR Congo",
+    "Mali": "Mali",
+    "Angola": "Angola",
+    "France": "France",
+    "Spain": "Spain",
+    "United Kingdom": "United Kingdom",
+    "Germany": "Germany",
+    "Italy": "Italy",
+    "Portugal": "Portugal",
+    "Netherlands": "Netherlands",
+    "Belgium": "Belgium",
+    "Turkey": "Turkey",
+    "Croatia": "Croatia",
+    "Switzerland": "Switzerland",
+    "Denmark": "Denmark",
+    "Saudi Arabia": "Saudi Arabia"
+  },
+  fr: {
+    "Morocco": "Maroc",
+    "Egypt": "Égypte",
+    "Algeria": "Algérie",
+    "Tunisia": "Tunisie",
+    "Senegal": "Sénégal",
+    "Nigeria": "Nigeria",
+    "Ivory Coast": "Côte d'Ivoire",
+    "Cameroon": "Cameroun",
+    "Ghana": "Ghana",
+    "South Africa": "Afrique du Sud",
+    "DR Congo": "RD Congo",
+    "Mali": "Mali",
+    "Angola": "Angola",
+    "France": "France",
+    "Spain": "Espagne",
+    "United Kingdom": "Royaume-Uni",
+    "Germany": "Allemagne",
+    "Italy": "Italie",
+    "Portugal": "Portugal",
+    "Netherlands": "Pays-Bas",
+    "Belgium": "Belgique",
+    "Turkey": "Turquie",
+    "Croatia": "Croatie",
+    "Switzerland": "Suisse",
+    "Denmark": "Danemark",
+    "Saudi Arabia": "Arabie Saoudite"
+  },
+  ar: {
+    "Morocco": "المغرب",
+    "Egypt": "مصر",
+    "Algeria": "الجزائر",
+    "Tunisia": "تونس",
+    "Senegal": "السنغال",
+    "Nigeria": "نيجيريا",
+    "Ivory Coast": "ساحل العاج",
+    "Cameroon": "الكاميرون",
+    "Ghana": "غانا",
+    "South Africa": "جنوب أفريقيا",
+    "DR Congo": "جمهورية الكونغو الديمقراطية",
+    "Mali": "مالي",
+    "Angola": "أنغولا",
+    "France": "فرنسا",
+    "Spain": "إسبانيا",
+    "United Kingdom": "المملكة المتحدة",
+    "Germany": "ألمانيا",
+    "Italy": "إيطاليا",
+    "Portugal": "البرتغال",
+    "Netherlands": "هولندا",
+    "Belgium": "بلجيكا",
+    "Turkey": "تركيا",
+    "Croatia": "كرواتيا",
+    "Switzerland": "سويسرا",
+    "Denmark": "الدنمارك",
+    "Saudi Arabia": "المملكة العربية السعودية"
+  }
+};
+
 const ANNUAL_DISCOUNT_FALLBACK = 5;
 
 function MarketingPageContent() {
@@ -525,7 +612,7 @@ function MarketingPageContent() {
                         {club.name}
                       </h3>
                       <p className="mt-1.5 text-xs text-text-muted whitespace-normal line-clamp-2">
-                        {club.city || "Morocco"} • {t.teamsHubLabel}
+                        {club.city} • {countryTranslations[lang]?.[club.country || "Morocco"] || club.country || "Morocco"}
                       </p>
                     </div>
                     <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">

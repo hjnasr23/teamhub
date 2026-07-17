@@ -10,13 +10,15 @@ import {
   EyeOff, 
   Eye, 
   Power, 
-  AlertTriangle 
+  AlertTriangle,
+  Edit
 } from "lucide-react";
 import { 
   createSuperAdminClub, 
   toggleClubStatus, 
   toggleClubVisibility, 
-  deleteClubAction 
+  deleteClubAction,
+  updateClubAdminAction
 } from "@/lib/super-admin-actions";
 import { useRouter } from "next/navigation";
 
@@ -39,6 +41,14 @@ export default function ClubsClient({
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
+
+  const [editingAdmin, setEditingAdmin] = useState<{
+    id: string; // adminId
+    clubId: string;
+    clubName: string;
+    email: string;
+  } | null>(null);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
 
   const router = useRouter();
 
@@ -110,6 +120,40 @@ export default function ClubsClient({
       } finally {
         setIsSubmittingDelete(false);
       }
+    }
+  };
+
+  const handleEditAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAdmin) return;
+    setIsSubmittingEdit(true);
+
+    try {
+      const form = e.target as HTMLFormElement;
+      const clubName = (form.elements.namedItem("clubName") as HTMLInputElement).value;
+      const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+      const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+      const res = await updateClubAdminAction({
+        clubId: editingAdmin.clubId,
+        adminId: editingAdmin.id,
+        clubName,
+        email,
+        password
+      });
+
+      if (res.success) {
+        setEditingAdmin(null);
+        alert("Club settings updated successfully!");
+        router.refresh();
+      } else {
+        alert(res.error || "Failed to update credentials");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert("An unexpected error occurred");
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -225,6 +269,23 @@ export default function ClubsClient({
                               <Power className="h-4 w-4 text-amber-500" />
                               {club.status === "ACTIVE" ? "Suspend Access" : "Activate Access"}
                             </button>
+                            {club.admin && (
+                              <button 
+                                onClick={() => { 
+                                  setActiveDropdown(null); 
+                                  setEditingAdmin({
+                                    id: club.admin.id,
+                                    clubId: club.id,
+                                    clubName: club.name,
+                                    email: club.admin.email || "",
+                                  }); 
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2 text-xs cursor-pointer"
+                              >
+                                <Edit className="h-4 w-4 text-blue-500" />
+                                Edit Admin Credentials
+                              </button>
+                            )}
                             <div className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
                             <button 
                               onClick={() => { setActiveDropdown(null); setDeleteTarget({ id: club.id, name: club.name }); }}
@@ -326,6 +387,46 @@ export default function ClubsClient({
                 {isSubmittingDelete ? "Deleting..." : "Confirm Delete"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Admin Modal */}
+      {editingAdmin && (
+        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setEditingAdmin(null)} />
+          <div className="relative w-full max-w-md transform transition-transform bg-white dark:bg-slate-900 shadow-2xl flex flex-col h-full animate-in slide-in-from-right overflow-y-auto border-l border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0 sticky top-0 bg-white dark:bg-slate-900 z-10">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Edit Club & Admin</h2>
+              <button onClick={() => setEditingAdmin(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <form onSubmit={handleEditAdmin} className="flex-1 flex flex-col p-6 space-y-5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Club Name</label>
+                <input required name="clubName" type="text" defaultValue={editingAdmin.clubName} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="e.g. Raja CA" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Admin Email</label>
+                <input required name="email" type="email" defaultValue={editingAdmin.email} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="e.g. admin@raja.ma" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Admin Password (leave blank to keep current)</label>
+                <input name="password" type="password" className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="••••••••" />
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex justify-end gap-3">
+                  <button type="button" onClick={() => setEditingAdmin(null)} className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-xs cursor-pointer">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={isSubmittingEdit} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center min-w-[120px] text-xs shadow-sm cursor-pointer">
+                    {isSubmittingEdit ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}

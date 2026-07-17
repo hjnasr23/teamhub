@@ -177,3 +177,44 @@ export async function releasePayoutAction(payoutId: string) {
     return { success: false, error: err.message || "Failed to release payout" };
   }
 }
+
+export async function updateClubAdminAction(data: {
+  clubId: string;
+  adminId: string;
+  clubName: string;
+  email: string;
+  password?: string;
+}) {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Update the Club name
+      const club = await tx.club.update({
+        where: { id: data.clubId },
+        data: { name: data.clubName },
+      });
+
+      // 2. Update the Admin User credentials
+      const userUpdateData: any = {
+        email: data.email,
+      };
+
+      if (data.password && data.password.trim() !== "") {
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        userUpdateData.password = hashedPassword;
+      }
+
+      const user = await tx.user.update({
+        where: { id: data.adminId },
+        data: userUpdateData,
+      });
+
+      return { club, user };
+    });
+
+    revalidatePath('/admin-gen/clubs');
+    return { success: true, data: result };
+  } catch (err: any) {
+    console.error("Update admin error:", err);
+    return { success: false, error: err.message || "Failed to update club/admin credentials" };
+  }
+}

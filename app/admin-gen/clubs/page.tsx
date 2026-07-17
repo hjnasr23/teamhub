@@ -9,6 +9,14 @@ export default async function ClubsManagementPage() {
     prisma.club.findMany({
       orderBy: { createdAt: "desc" },
       include: {
+        admin: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
         _count: {
           select: { subscriptions: { where: { status: "ACTIVE" } } },
         },
