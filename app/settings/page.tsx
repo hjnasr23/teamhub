@@ -73,6 +73,11 @@ const fanDashboardTranslations = {
     exploreDirectory: "Explore Directory",
     successMsg: "Profile updated successfully in the database!",
     errorMsg: "Failed to update profile.",
+    currentPassword: "Current Password",
+    confirmNewPassword: "Confirm New Password",
+    createPassword: "Create Password",
+    changePassword: "Change Password",
+    passwordsDoNotMatch: "Passwords do not match.",
   },
   fr: {
     loading: "Chargement de votre profil depuis la base de données...",
@@ -101,6 +106,11 @@ const fanDashboardTranslations = {
     exploreDirectory: "Explorer le répertoire",
     successMsg: "Profil mis à jour avec succès dans la base de données !",
     errorMsg: "Échec de la mise à jour du profil.",
+    currentPassword: "Mot de passe actuel",
+    confirmNewPassword: "Confirmer le nouveau mot de passe",
+    createPassword: "Créer un mot de passe",
+    changePassword: "Changer le mot de passe",
+    passwordsDoNotMatch: "Les mots de passe ne correspondent pas.",
   },
   ar: {
     loading: "جاري تحميل ملفك الشخصي من قاعدة البيانات...",
@@ -129,6 +139,11 @@ const fanDashboardTranslations = {
     exploreDirectory: "استكشاف الدليل",
     successMsg: "تم تحديث الملف الشخصي بنجاح في قاعدة البيانات!",
     errorMsg: "فشل في تحديث الملف الشخصي.",
+    currentPassword: "كلمة المرور الحالية",
+    confirmNewPassword: "تأكيد كلمة المرور الجديدة",
+    createPassword: "إنشاء كلمة مرور",
+    changePassword: "تغيير كلمة المرور",
+    passwordsDoNotMatch: "كلمات المرور غير متطابقة.",
   }
 } as const;
 
@@ -154,7 +169,12 @@ export default function AccountSettingsPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  
+  // Password states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [hasPassword, setHasPassword] = useState(true);
 
   // Live database state
   const [subscriptions, setSubscriptions] = useState<SubscriptionCard[]>([]);
@@ -169,6 +189,7 @@ export default function AccountSettingsPage() {
         setFirstName(user.firstName);
         setLastName(user.lastName);
         setEmail(user.email);
+        setHasPassword((user as any).hasPassword ?? true);
         setSubscriptions(subscriptions);
         setActivities(activities);
       } else {
@@ -184,10 +205,20 @@ export default function AccountSettingsPage() {
     e.preventDefault();
     setMessage(null);
 
+    if (newPassword && newPassword !== confirmNewPassword) {
+      setMessage({
+        type: "error",
+        text: t.passwordsDoNotMatch,
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
     formData.append("email", email);
+    formData.append("currentPassword", currentPassword);
+    formData.append("newPassword", newPassword);
 
     startTransition(async () => {
       const response = await updateProfileAction(formData);
@@ -196,7 +227,16 @@ export default function AccountSettingsPage() {
           type: "success",
           text: t.successMsg,
         });
-        setPassword("");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        
+        // Refresh local password status flag
+        const syncResponse = await getFanData();
+        if (syncResponse.success && syncResponse.data) {
+          setHasPassword((syncResponse.data.user as any).hasPassword ?? true);
+        }
+        
         router.refresh();
       } else {
         setMessage({
@@ -324,21 +364,69 @@ export default function AccountSettingsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-text-dark dark:text-slate-200">
-                    {t.newPassword}
-                  </label>
-                  <div className="relative">
-                    <div className={`pointer-events-none absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
-                      <Lock className="h-4 w-4 text-text-muted" />
+                {/* Password Section */}
+                <div className="border-t border-border-custom pt-6">
+                  <h3 className="text-sm font-bold text-text-dark dark:text-white mb-4">
+                    {hasPassword ? t.changePassword : t.createPassword}
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {/* Current Password - Only show if user has password */}
+                    {hasPassword && (
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-text-dark dark:text-slate-200">
+                          {t.currentPassword}
+                        </label>
+                        <div className="relative">
+                          <div className={`pointer-events-none absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
+                            <Lock className="h-4 w-4 text-text-muted" />
+                          </div>
+                          <input
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            className={`w-full rounded-xl border border-border-custom bg-neutral-bg-alt py-2.5 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark placeholder-text-muted transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-slate-950 dark:text-white`}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* New Password */}
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-text-dark dark:text-slate-200">
+                        {t.newPassword}
+                      </label>
+                      <div className="relative">
+                        <div className={`pointer-events-none absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
+                          <Lock className="h-4 w-4 text-text-muted" />
+                        </div>
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder={hasPassword ? t.passwordPlaceholder : ""}
+                          className={`w-full rounded-xl border border-border-custom bg-neutral-bg-alt py-2.5 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark placeholder-text-muted transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-slate-950 dark:text-white`}
+                        />
+                      </div>
                     </div>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={t.passwordPlaceholder}
-                      className={`w-full rounded-xl border border-border-custom bg-neutral-bg-alt py-2.5 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark placeholder-text-muted transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-slate-950 dark:text-white`}
-                    />
+
+                    {/* Confirm New Password */}
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-text-dark dark:text-slate-200">
+                        {t.confirmNewPassword}
+                      </label>
+                      <div className="relative">
+                        <div className={`pointer-events-none absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
+                          <Lock className="h-4 w-4 text-text-muted" />
+                        </div>
+                        <input
+                          type="password"
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          className={`w-full rounded-xl border border-border-custom bg-neutral-bg-alt py-2.5 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-text-dark placeholder-text-muted transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:bg-slate-950 dark:text-white`}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 

@@ -97,6 +97,7 @@ export const authOptions: NextAuthOptions = {
           token.clubId = dbUser.managedClub?.id || null;
           token.firstName = dbUser.firstName || dbUser.name?.split(" ")[0] || "";
           token.lastName = dbUser.lastName || dbUser.name?.split(" ").slice(1).join(" ") || "";
+          token.hasPassword = !!dbUser.password;
         } else if (user) {
           // Fallback for brand new user registrations via Google
           token.id = user.id;
@@ -106,6 +107,7 @@ export const authOptions: NextAuthOptions = {
           token.clubId = (user as any).clubId || null;
           token.firstName = (user as any).firstName || user.name?.split(" ")[0] || "";
           token.lastName = (user as any).lastName || user.name?.split(" ").slice(1).join(" ") || "";
+          token.hasPassword = false;
         }
       }
 
@@ -123,6 +125,7 @@ export const authOptions: NextAuthOptions = {
             lastName: token.lastName,
             clubSlug: token.clubSlug,
             clubId: token.clubId,
+            hasPassword: token.hasPassword,
           }),
           {
             httpOnly: true,
@@ -144,6 +147,7 @@ export const authOptions: NextAuthOptions = {
         session.user.userId = token.id || token.userId;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
+        session.user.hasPassword = token.hasPassword;
 
         // Write to the custom cookie so server actions/middleware remain perfectly synchronized
         const cookieStore = await cookies();
@@ -158,6 +162,7 @@ export const authOptions: NextAuthOptions = {
             lastName: token.lastName,
             clubSlug: token.clubSlug,
             clubId: token.clubId,
+            hasPassword: token.hasPassword,
           }),
           {
             httpOnly: true,

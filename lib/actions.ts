@@ -135,6 +135,8 @@ export async function updateProfileAction(
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
   const email = formData.get("email") as string;
+  const currentPassword = formData.get("currentPassword") as string || "";
+  const newPassword = formData.get("newPassword") as string || "";
 
   const session = await getSession();
   if (!session) {
@@ -142,9 +144,40 @@ export async function updateProfileAction(
   }
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId }
+    });
+
+    if (!user) {
+      return { success: false, error: "User not found." };
+    }
+
+    const hasPassword = !!user.password;
+    let passwordData: any = {};
+
+    if (newPassword) {
+      if (hasPassword) {
+        if (!currentPassword) {
+          return { success: false, error: "Current password is required to change your password." };
+        }
+        const isMatch = await bcrypt.compare(currentPassword, user.password!);
+        if (!isMatch) {
+          return { success: false, error: "Incorrect current password." };
+        }
+      }
+      
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      passwordData.password = hashedPassword;
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: session.userId },
-      data: { firstName, lastName, email },
+      data: { 
+        firstName, 
+        lastName, 
+        email,
+        ...passwordData
+      },
     });
 
     const cookieStore = await cookies();
@@ -155,6 +188,7 @@ export async function updateProfileAction(
         email: updatedUser.email,
         firstName: updatedUser.firstName ?? "",
         lastName: updatedUser.lastName ?? "",
+        hasPassword: !!updatedUser.password,
       }),
       {
         httpOnly: true,
@@ -246,6 +280,7 @@ export async function getFanData(): Promise<
           firstName: user.firstName ?? "",
           lastName: user.lastName ?? "",
           email: user.email,
+          hasPassword: !!user.password,
         },
         subscriptions: mappedSubscriptions,
         activities,
