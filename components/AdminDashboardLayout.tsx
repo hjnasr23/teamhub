@@ -19,6 +19,8 @@ import {
   X,
 } from "lucide-react";
 
+import { useInactivityLogout } from "@/lib/hooks/useInactivityLogout";
+
 export default function AdminDashboardLayout({
   session,
   children,
@@ -26,6 +28,7 @@ export default function AdminDashboardLayout({
   session: any;
   children: React.ReactNode;
 }) {
+  useInactivityLogout(60000); // 1 minute inactivity timeout
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 

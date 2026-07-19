@@ -33,11 +33,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSession();
-  const isLoggedIn = !!session;
+  const isSuperAdmin = session?.role === "SUPER_ADMIN";
+  const isLoggedIn = !!session && !isSuperAdmin;
   const isAdmin = session?.role === "CLUB_ADMIN";
   let adminClubSlug = null;
 
-  if (isAdmin) {
+  if (isAdmin && session) {
     const { prisma } = await import("@/lib/db");
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
@@ -64,7 +65,7 @@ export default async function RootLayout({
               isAdmin={isAdmin}
               isLoggedIn={isLoggedIn}
               adminClubSlug={adminClubSlug}
-              session={session}
+              session={isSuperAdmin ? null : session}
             >
               {children}
               <Footer />

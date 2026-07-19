@@ -1,12 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/client"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-  output   = "../lib/generated/client"
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?
+  firstName String?
+  lastName  String?
+  role      Role     @default(FAN)
+  createdAt DateTime @default(now())
+
+  // NextAuth Adapter requirements:
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  managedClub   Club?          @relation("AdminToClub")
+  subscriptions Subscription[]
+}
+
+model Club {
+  id               String          @id @default(uuid())
+  name             String
+  slug             String          @unique
+  description      String?
+  city             String
+  logoUrl          String?
+  bannerUrl        String?
+  primaryColor     String          @default("#10B981")
+  secondaryColor   String          @default("#059669")
+  subscribersCount Int             @default(0)
+  status           ClubStatus      @default(ACTIVE)
+  createdAt        DateTime        @default(now())
+  adminId          String?         @unique
+  visibility       String          @default("PRIVATE")
+  country          String          @default("Morocco")
+  admin            User?           @relation("AdminToClub", fields: [adminId], references: [id], onDelete: Cascade)
+  payoutRequests   PayoutRequest[]
+  posts            Post[]
+  subscriptions    Subscription[]
+}
+
+model Post {
+  id         String         @id @default(uuid())
+  title      String
+  content    String
+  mediaUrl   String?
+  mediaType  String?
+  visibility PostVisibility @default(PUBLIC)
+  createdAt  DateTime       @default(now())
+  clubId     String
+  club       Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id        String    @id @default(uuid())
+  status    SubStatus @default(ACTIVE)
+  amount    Int       @default(0)
+  createdAt DateTime  @default(now())
+  fanId     String
+  clubId    String
+  club      Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [fanId], references: [id], onDelete: Cascade)
+}
+
+model PlatformSetting {
+  id             String   @id @default("global")
+  commissionRate Float    @default(0.10)
+  stripeLiveMode Boolean  @default(false)
+  cmiLiveMode    Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+}
+
+model PayoutRequest {
+  id        String       @id @default(uuid())
+  amount    Int
+  status    PayoutStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+  clubId    String
+  club      Club         @relation(fields: [clubId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -37,81 +119,37 @@ enum PayoutStatus {
   APPROVED
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String?
-  lastName  String?
-  role      Role     @default(FAN)
-  createdAt DateTime @default(now())
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
-  managedClub Club? @relation("AdminToClub")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  subscriptions Subscription[]
+  @@unique([provider, providerAccountId])
 }
 
-model Club {
-  id               String     @id @default(uuid())
-  name             String
-  slug             String     @unique
-  description      String?
-  city             String
-  country          String     @default("Morocco")
-  logoUrl          String?
-  bannerUrl        String?
-  primaryColor     String     @default("#10B981")
-  secondaryColor   String     @default("#059669")
-  subscribersCount Int        @default(0)
-  status           ClubStatus @default(ACTIVE)
-  visibility       String     @default("PRIVATE")
-  createdAt        DateTime   @default(now())
-
-  adminId        String?         @unique
-  admin          User?           @relation("AdminToClub", fields: [adminId], references: [id], onDelete: Cascade)
-  posts          Post[]
-  subscriptions  Subscription[]
-  payoutRequests PayoutRequest[]
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Post {
-  id         String         @id @default(uuid())
-  title      String
-  content    String
-  mediaUrl   String?
-  mediaType  String?
-  visibility PostVisibility @default(PUBLIC)
-  createdAt  DateTime       @default(now())
-  clubId     String
-  club       Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
-}
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-model Subscription {
-  id        String    @id @default(uuid())
-  status    SubStatus @default(ACTIVE)
-  amount    Int       @default(0)
-  createdAt DateTime  @default(now())
-
-  fanId  String
-  user   User   @relation(fields: [fanId], references: [id], onDelete: Cascade)
-  clubId String
-  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-}
-
-model PlatformSetting {
-  id             String   @id @default("global")
-  commissionRate Float    @default(0.10)
-  stripeLiveMode Boolean  @default(false)
-  cmiLiveMode    Boolean  @default(false)
-  updatedAt      DateTime @updatedAt
-}
-
-model PayoutRequest {
-  id        String       @id @default(uuid())
-  amount    Int
-  status    PayoutStatus @default(PENDING)
-  createdAt DateTime     @default(now())
-
-  clubId String
-  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  @@unique([identifier, token])
 }

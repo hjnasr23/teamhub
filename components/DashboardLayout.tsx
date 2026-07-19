@@ -122,7 +122,8 @@ export default function DashboardLayout({
 
   const handleLogout = () => {
     startTransition(async () => {
-      await signOut({ callbackUrl: "/" });
+      await signOut({ redirect: false });
+      await logoutAction();
     });
   };
 

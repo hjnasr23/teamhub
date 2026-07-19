@@ -15,6 +15,8 @@ interface ClubAdminLayoutClientProps {
   clubLogoUrl: string | null;
 }
 
+import { useInactivityLogout } from "@/lib/hooks/useInactivityLogout";
+
 export default function ClubAdminLayoutClient({
   children,
   clubSlug,
@@ -22,6 +24,7 @@ export default function ClubAdminLayoutClient({
   clubPrimaryColor,
   clubLogoUrl,
 }: ClubAdminLayoutClientProps) {
+  useInactivityLogout(60000); // 1 minute inactivity timeout
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 

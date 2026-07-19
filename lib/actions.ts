@@ -82,6 +82,7 @@ export async function loginAction(
 
     // 4. Issue a secure HTTP-only cookie
     const cookieStore = await cookies();
+    const isFan = user.role === "FAN";
     cookieStore.set(
       "auth_session",
       JSON.stringify({
@@ -96,7 +97,7 @@ export async function loginAction(
       {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24, // 1 day
+        maxAge: isFan ? 60 * 60 * 24 * 365 : 60 * 60 * 24, // 1 year for fans, 1 day for admins
         path: "/",
       }
     );
