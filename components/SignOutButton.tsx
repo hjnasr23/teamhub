@@ -7,8 +7,13 @@ import { logoutAction } from "@/lib/actions";
 
 export default function SignOutButton() {
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    await logoutAction();
+    try {
+      await logoutAction();
+    } catch (e) {
+      // Safe to ignore
+    }
+    await signOut({ callbackUrl: "/login", redirect: true });
+    window.location.href = "/login";
   };
 
   return (

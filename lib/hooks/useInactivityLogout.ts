@@ -10,12 +10,12 @@ export function useInactivityLogout(timeoutMs: number = 60000) {
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        await signOut({ redirect: false });
         await logoutAction();
       } catch (e) {
-        // Fallback redirection to login page
-        window.location.href = "/login";
+        // Safe to ignore
       }
+      await signOut({ callbackUrl: "/login", redirect: true });
+      window.location.href = "/login";
     };
 
     const resetTimer = () => {

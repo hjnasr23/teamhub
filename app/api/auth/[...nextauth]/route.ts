@@ -54,6 +54,21 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 hours
+  },
+  jwt: {
+    maxAge: 24 * 60 * 60,
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
   callbacks: {
     async signIn({ user, account, profile }) {
@@ -183,9 +198,11 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signOut() {
-      // Clear the custom cookie on sign-out
+      // Clear all session cookies on sign-out
       const cookieStore = await cookies();
       cookieStore.delete("auth_session");
+      cookieStore.delete("next-auth.session-token");
+      cookieStore.delete("__Secure-next-auth.session-token");
     }
   },
   secret: process.env.NEXTAUTH_SECRET,

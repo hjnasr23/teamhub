@@ -74,7 +74,7 @@ export default function LoginForm({ lang }: LoginFormProps) {
     const checkActiveSession = async () => {
       try {
         const session = await getSession();
-        if (session) {
+        if (session && session.userId && session.role) {
           const role = session.role;
           const clubSlug = session.clubSlug;
           let redirectPath = callbackUrl || `/?lang=${lang}`;

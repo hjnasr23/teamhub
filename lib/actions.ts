@@ -119,10 +119,12 @@ export async function loginAction(
  *  Logout — Destroys session
  * ════════════════════════════════════════════════════════════════════ */
 
-export async function logoutAction(): Promise<never> {
+export async function logoutAction(): Promise<ActionResponse<boolean>> {
   const cookieStore = await cookies();
   cookieStore.delete("auth_session");
-  redirect("/");
+  cookieStore.delete("next-auth.session-token");
+  cookieStore.delete("__Secure-next-auth.session-token");
+  return { success: true, data: true };
 }
 
 /* ════════════════════════════════════════════════════════════════════

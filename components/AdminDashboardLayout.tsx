@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 
+import { logoutAction } from "@/lib/actions";
 import { useInactivityLogout } from "@/lib/hooks/useInactivityLogout";
 
 export default function AdminDashboardLayout({
@@ -31,6 +32,16 @@ export default function AdminDashboardLayout({
   useInactivityLogout(60000); // 1 minute inactivity timeout
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  const handleLogout = async () => {
+    try {
+      await logoutAction();
+    } catch (e) {
+      // Safe to ignore
+    }
+    await signOut({ callbackUrl: "/login", redirect: true });
+    window.location.href = "/login";
+  };
 
   const closeMenu = () => setMobileMenuOpen(false);
 
@@ -133,7 +144,7 @@ export default function AdminDashboardLayout({
         {/* User / Logout */}
         <div className="p-4 border-t border-gray-200 dark:border-slate-800 shrink-0">
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={handleLogout}
             className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors"
           >
             <LogOut className="h-5 w-5 shrink-0" />

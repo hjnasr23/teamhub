@@ -8,34 +8,32 @@ export async function middleware(request: NextRequest) {
   // 1. Extract the authentication token
   const sessionCookie = request.cookies.get('auth_session');
   
-  // If no auth_session exists, check if NextAuth is authenticated and sync it!
+  // If no auth_session exists and trying to access protected paths (not /login)
   if (!sessionCookie) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (token) {
-      const isFan = token.role === "FAN";
-      const sessionData = {
-        userId: token.id || token.userId,
-        role: token.role,
-        email: token.email,
-        firstName: token.firstName || "",
-        lastName: token.lastName || "",
-        clubSlug: token.clubSlug || null,
-        clubId: token.clubId || null,
-      };
-
-      // Redirect back to the same page with the cookie injected
-      const response = NextResponse.redirect(new URL(request.nextUrl.pathname + request.nextUrl.search, request.url));
-      response.cookies.set("auth_session", JSON.stringify(sessionData), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: isFan ? 60 * 60 * 24 * 365 : 60 * 60 * 24, // 1 year for fans, 1 day for admins
-        path: "/",
-      });
-      return response;
-    }
-    
-    // If not authenticated and trying to access protected paths (not /login)
     if (!pathname.startsWith('/login')) {
+      const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+      if (token) {
+        const isFan = token.role === "FAN";
+        const sessionData = {
+          userId: token.id || token.userId,
+          role: token.role,
+          email: token.email,
+          firstName: token.firstName || "",
+          lastName: token.lastName || "",
+          clubSlug: token.clubSlug || null,
+          clubId: token.clubId || null,
+        };
+
+        // Redirect back to the same page with the cookie injected
+        const response = NextResponse.redirect(new URL(request.nextUrl.pathname + request.nextUrl.search, request.url));
+        response.cookies.set("auth_session", JSON.stringify(sessionData), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: isFan ? 60 * 60 * 24 * 365 : 60 * 60 * 24, // 1 year for fans, 1 day for admins
+          path: "/",
+        });
+        return response;
+      }
       return NextResponse.redirect(new URL('/login', request.url));
     }
     return NextResponse.next();

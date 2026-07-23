@@ -120,11 +120,14 @@ export default function DashboardLayout({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    startTransition(async () => {
-      await signOut({ redirect: false });
+  const handleLogout = async () => {
+    try {
       await logoutAction();
-    });
+    } catch (e) {
+      // Safe to ignore
+    }
+    await signOut({ callbackUrl: "/login", redirect: true });
+    window.location.href = "/login";
   };
 
   /* Close mobile drawer on route change */
