@@ -30,29 +30,14 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
     notFound();
   }
 
-  // 3. Dynamic Context Parsing (Determine what the Fan is buying)
-  let planName = "Supporter Membership";
-  let price = 10;
-  let billingCycle = "Month";
-
-  if (planId === "premium") {
-    planName = "Pro Supporter Membership";
-    price = 50;
-  } else if (planId === "vip") {
-    planName = "Gold VIP Access";
-    price = 150;
-  }
-
   const clubLogoInitials = club.name.substring(0, 2).toUpperCase();
 
   return (
     <CheckoutClient 
       clubName={club.name}
       clubLogoInitials={clubLogoInitials}
-      planName={planName}
-      price={price}
-      billingCycle={billingCycle}
       clubSlug={slug}
+      initialPlanId={planId || "basic"}
     />
   );
 }

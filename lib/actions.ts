@@ -579,6 +579,15 @@ export async function createSubscriptionAction(
     });
 
     if (existing) {
+      if (existing.amount !== amount) {
+        await prisma.subscription.update({
+          where: { id: existing.id },
+          data: {
+            amount: amount,
+            createdAt: new Date(),
+          },
+        });
+      }
       return { success: true, data: true };
     }
 
